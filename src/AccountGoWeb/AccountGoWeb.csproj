@@ -8,6 +8,7 @@
     <TypeScriptToolsVersion>latest</TypeScriptToolsVersion>
     <Version>0.0.1-alpha</Version>
     <Language>Latest</Language>
+	<NoWarn>NU1701</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
