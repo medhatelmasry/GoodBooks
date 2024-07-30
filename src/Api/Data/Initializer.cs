@@ -451,7 +451,6 @@ namespace Api.Data
                 Console.WriteLine("SetupChartOfAccountsAndAccountClasses() encounterd an Exception - " + ex.StackTrace);
                 throw;
             }
-
         }
 
         private void SetupFinancialYear()
