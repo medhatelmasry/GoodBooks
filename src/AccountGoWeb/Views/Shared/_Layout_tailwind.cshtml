@@ -8,11 +8,12 @@
     <partial name="_Head" />
 </head>
 
-<body class="bg-lightPrimary text-darkPrimary dark:bg-darkPrimary dark:bg-lightPrimary">
+<body class="bg-lightPrimary text-darkPrimary dark:text-lightSecondary dark:bg-darkPrimary h-screen">
     <div class="flex h-screen">
-        <partial name="_LeftNavigation" model="Model" />
-        <div class="flex-1 p-5 bg-lightPrimary dark:bg-darkPrimary">
-            <div class>
+        <!-- left side navigation -->
+        <partial name="_LeftNavigationTest" />
+        <div class="flex-1 p-5 bg-lightPrimary w-full">
+            <div class="w-full">
                 <!-- PAGE CONTENT -->
                 <h2>
                     @Html.Raw(ViewBag.PageContentHeader)
@@ -25,6 +26,22 @@
     </div>
     <partial name="_Footer" />
     <script src="~/_framework/blazor.server.js"></script>
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pace-js@latest/pace.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.perfect-scrollbar/1.5.5/perfect-scrollbar.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/@@coreui/coreui@4.3.2/dist/js/coreui.bundle.min.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ag-grid/31.0.1/ag-grid-community.min.js"></script>
+    <script>
+        $('.sub-menu ul').hide();
+        $(".sub-menu a").click(function () {
+            $(this).parent(".sub-menu").children("ul").slideToggle("100");
+            $(this).find(".right").toggleClass("fa-caret-up fa-caret-down");
+        });
+    </script>
     <!-- PLugins and scripts required by the views -->
     @RenderSection("Scripts", required: false)
 </body>
