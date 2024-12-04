@@ -1,3 +1,6 @@
+@using AccountGoWeb.Models.SubMenu
+@model NavigationModel
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,7 +9,7 @@
 
 <body class="bg-lightPrimary text-darkPrimary dark:bg-darkPrimary dark:bg-lightPrimary">
     <div class="flex h-screen">
-        <partial name="_LeftNavigationTest" model="@Model"/>
+        <partial name="_LeftNavigation" model="Model"/>
         <div class="flex-1 p-5 bg-lightPrimary dark:bg-darkPrimary">
             <div class>
                 <!-- PAGE CONTENT -->
