@@ -1,3 +1,15 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Hide scrollbar for all elements */
+.hidden-scrollbar {
+    overflow-y: scroll; /* Enables vertical scrolling */
+    -ms-overflow-style: none; /* Hides scrollbar in IE and Edge */
+    scrollbar-width: none; /* Hides scrollbar in Firefox */
+  }
+  
+  /* Hides scrollbar in Chrome, Safari, and Edge */
+  .hidden-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
