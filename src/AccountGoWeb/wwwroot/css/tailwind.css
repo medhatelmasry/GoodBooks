@@ -14,6 +14,9 @@
     display: none;
   }
 
+  li {
+    list-style: none;
+}
   .disabled {
     pointer-events: none;
     opacity: 0.6;
@@ -24,4 +27,10 @@
   border: 1px solid #ccc;
   background-color: #134074;
   color: #fff;
+.dark .hover\:text-lightPrimary:hover {
+  color: var(--lightPrimary);
+}
+
+.dark .hover\:bg-darkPrimary:hover {
+  background-color: var(--darkPrimary);
 }

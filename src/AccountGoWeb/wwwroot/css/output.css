@@ -107,7 +107,7 @@
 }
 
 /*
-! tailwindcss v3.4.16 | MIT License | https://tailwindcss.com
+! tailwindcss v3.4.15 | MIT License | https://tailwindcss.com
 */
 
 /*
@@ -616,10 +616,6 @@ video {
   left: 0px;
 }
 
-.right-0 {
-  right: 0px;
-}
-
 .top-0 {
   top: 0px;
 }
@@ -920,6 +916,11 @@ video {
   line-height: 1.25rem;
 }
 
+.text-xs {
+  font-size: 0.6rem;
+  line-height: 1rem;
+}
+
 .font-bold {
   font-weight: 700;
 }
@@ -986,6 +987,7 @@ video {
   transition-duration: 150ms;
 }
 
+<<<<<<< HEAD
 /* Hide scrollbar for all elements */
 
 .hidden-scrollbar {
@@ -1015,6 +1017,8 @@ video {
   color: #fff;
 }
 
+=======
+>>>>>>> d6e9a121938f71cea07c1a5c0b9674e02c31663d
 .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
@@ -1104,6 +1108,14 @@ video {
   color: rgb(238 244 237 / var(--tw-text-opacity, 1));
 }
 
+<<<<<<< HEAD
+=======
+.dark\:hover\:bg-darkPrimary:hover:where(.dark, .dark *) {
+  --tw-bg-opacity: 1;
+  background-color: rgb(11 37 69 / var(--tw-bg-opacity, 1));
+}
+
+>>>>>>> d6e9a121938f71cea07c1a5c0b9674e02c31663d
 .dark\:hover\:bg-gray-600:hover:where(.dark, .dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity, 1));
@@ -1113,3 +1125,11 @@ video {
   --tw-bg-opacity: 1;
   background-color: rgb(55 65 81 / var(--tw-bg-opacity, 1));
 }
+<<<<<<< HEAD
+=======
+
+.dark\:hover\:text-white:hover:where(.dark, .dark *) {
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+}
+>>>>>>> d6e9a121938f71cea07c1a5c0b9674e02c31663d

@@ -1,36 +1,42 @@
 ﻿@model IEnumerable<Dto.Financial.Bank>
-<style>
-    tr th { color: yellow; }
-    tr td { color: #fff;  }
-</style>
-<div class="col-md-9">
-    <div class="box">
-        <div class="box-body table-responsive">
-            <table class="table table-hover">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Type</th>
-                        <th>GL Account</th>
-                        <th>Bank</th>
-                        <th>Address</th>
-                        <th>Account No</th>
-                    </tr>
-                </thead>
-                <tbody>
+
+<div class="w-full grid grid-cols-1 gap-4">
+  <div class="dark:bg-gray-800 shadow-md">
+    <div class="overflow-w-auto w-full mb-6 text-darkPrimary rounded-lg overflow-hidden">
+      <table class="w-full table-auto border-collapse bg-white shadow-md text-darkPrimary">
+        <thead class="dark:bg-lightPrimary bg-darkSecondary text-white text-sm uppercase font-semibold">
+          <tr>
+            <th class="p-4 border text-center">Name</th>
+            <th class="p-4 border text-center">Type</th>
+            <th class="p-4 border text-center">GL Account</th>
+            <th class="p-4 border text-center">Bank</th>
+            <th class="p-4 border text-center">Address</th>
+            <th class="p-4 border text-center">Account No</th>
+          </tr>
+        </thead>
+        <tbody>
                     @foreach (var bank in Model)
                     {
-                        <tr>
-                            <td>@bank.Name</td>
-                            <td></td>
-                            <td></td>
-                            <td>@bank.BankName</td>
-                            <td></td>
-                            <td>@bank.AccountNo</td>
-                        </tr>
+                <tr class="text-sm uppercase font-semibold hover:bg-slate-100">
+                  <td class="p-4 border" style="display: table-cell; text-align: center; vertical-align: middle; border: 1px solid #ccc;">
+                                @bank.Name
+                  </td>
+                  <td class="p-4 border" style="display: table-cell; text-align: center; vertical-align: middle; border: 1px solid #ccc;">
+                  </td>
+                  <td class="p-4 border" style="display: table-cell; text-align: center; vertical-align: middle; border: 1px solid #ccc;">
+                  </td>
+                  <td class="p-4 border" style="display: table-cell; text-align: center; vertical-align: middle; border: 1px solid #ccc;">
+                                @bank.BankName
+                  </td>
+                  <td class="p-4 border" style="display: table-cell; text-align: center; vertical-align: middle; border: 1px solid #ccc;">
+                  </td>
+                  <td class="p-4 border" style="display: table-cell; text-align: center; vertical-align: middle; border: 1px solid #ccc;">
+                                @bank.AccountNo
+                  </td>
+                </tr>
                     }
-                </tbody>
-            </table>
-        </div>
+        </tbody>
+      </table>
     </div>
+  </div>
 </div>
