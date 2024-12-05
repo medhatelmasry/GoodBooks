@@ -1,9 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Dto.Inventory;
+﻿using Dto.Inventory;
+using Microsoft.AspNetCore.Mvc;
 using Services.Administration;
 using Services.Inventory;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Api.Controllers
 {
@@ -12,12 +10,15 @@ namespace Api.Controllers
     {
         private readonly IAdministrationService _adminService;
         private readonly IInventoryService _inventoryService;
+        private readonly ILogger<InventoryController> _logger;
 
         public InventoryController(IAdministrationService adminService,
-            IInventoryService inventoryService)
+            IInventoryService inventoryService,
+            ILogger<InventoryController> logger)
         {
             _adminService = adminService;
             _inventoryService = inventoryService;
+            _logger = logger;
         }
 
         [HttpPost]
@@ -25,7 +26,7 @@ namespace Api.Controllers
         public IActionResult SaveItem([FromBody]Item itemDto)
         {
             bool isNew = itemDto.Id == 0;
-            Core.Domain.Items.Item item = null;
+            Core.Domain.Items.Item? item = null;
 
             if (isNew)
             {
@@ -35,6 +36,8 @@ namespace Api.Controllers
             {
                 item = _inventoryService.GetItemById(itemDto.Id);
             }
+
+            _logger.LogInformation("Item is New: " + isNew);
 
             item.No = itemDto.No;
             item.Code = itemDto.Code;
@@ -86,8 +89,6 @@ namespace Api.Controllers
                     Price = item.Price,
                     QuantityOnHand = item.ComputeQuantityOnHand()
                 });
-
-                
             }
 
             return new ObjectResult(itemsDto.AsEnumerable());
@@ -141,6 +142,8 @@ namespace Api.Controllers
                     Date = icj.Date
                 });
             }
+
+            _logger.LogInformation("ICJ Count: " + icjDto.Count);
             return new ObjectResult(icjDto.AsEnumerable());
         }    
     }

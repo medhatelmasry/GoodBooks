@@ -298,11 +298,12 @@ namespace Api.Data
 
         public override int SaveChanges()
         {
-            SaveAuditLog();
+            // TODO : Implementation Required
+            //SaveAuditLog();
 
             var ret = base.SaveChanges();
 
-            UpdateAuditLogRecordId();
+            //UpdateAuditLogRecordId();
 
             return ret;
         }
@@ -343,7 +344,7 @@ namespace Api.Data
                         .GetProperties()
                         .Single(p => p.GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.KeyAttribute), false).Count() > 0).Name;
 
-                    string recid = entity.Value.Property(keyName).CurrentValue.ToString();
+                    string? recid = entity.Value.Property(keyName).CurrentValue!.ToString();
 
                     var auditLog = this.AuditLogs.FirstOrDefault(log => log.AuditEventDateUTC == entity.Key);
 

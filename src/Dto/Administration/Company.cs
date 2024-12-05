@@ -6,17 +6,21 @@ namespace Dto.Administration
   {
     [Required]
     [Display(Name = "Company Code")]
-    public string CompanyCode { get; set; }
+    public string? CompanyCode { get; set; }
 
     [Required]
     [Display(Name = "Name")]
-    public string Name { get; set; }
+    public string? Name { get; set; }
 
     [Required]
     [Display(Name = "Short Name")]
-    public string ShortName { get; set; }
+    public string? ShortName { get; set; }
+
+    [Required]
+    [Display(Name = "CRA")]
+    public string? CRA { get; set; }
 
     [Display(Name = "Logo")]
-    public byte[] Logo { get; set; }
+    public byte[]? Logo { get; set; }
   }
 }

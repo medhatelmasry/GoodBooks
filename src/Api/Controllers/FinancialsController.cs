@@ -1,4 +1,5 @@
 ﻿using Dto.Financial;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Administration;
 using Services.Financial;
@@ -9,6 +10,7 @@ using System.Linq;
 namespace Api.Controllers
 {
     [Route("api/[controller]")]
+    //[Authorize]
     public class FinancialsController : BaseController
     {
         private readonly IAdministrationService _adminService;
@@ -28,7 +30,8 @@ namespace Api.Controllers
             var cashAndBanks = _financialService.GetCashAndBanks();
             var cashAndBanksDto = new List<Bank>();
 
-            foreach (var bank in cashAndBanks) {
+            foreach (var bank in cashAndBanks)
+            {
                 cashAndBanksDto.Add(new Bank()
                 {
                     Id = bank.Id,
@@ -84,7 +87,8 @@ namespace Api.Controllers
             var journalEntries = _financialService.GetJournalEntries();
             var journalEntriesDto = new List<JournalEntry>();
 
-            foreach (var je in journalEntries) {
+            foreach (var je in journalEntries)
+            {
                 var journalEntryDto = new JournalEntry()
                 {
                     Id = je.Id,
@@ -95,7 +99,8 @@ namespace Api.Controllers
                     Posted = je.Posted
                 };
 
-                foreach (var line in je.JournalEntryLines) {
+                foreach (var line in je.JournalEntryLines)
+                {
                     var lineDto = new JournalEntryLine()
                     {
                         Id = line.Id,
@@ -157,9 +162,9 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("PostJournalEntry")]
-        public IActionResult PostJournalEntry([FromBody]JournalEntry journalEntryDto)
+        public IActionResult PostJournalEntry([FromBody] JournalEntry journalEntryDto)
         {
-            string[] errors = null;
+            string[]? errors = null;
 
             try
             {
@@ -188,9 +193,9 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("SaveJournalEntry")]
-        public IActionResult SaveJournalEntry([FromBody]JournalEntry journalEntryDto)
+        public IActionResult SaveJournalEntry([FromBody] JournalEntry journalEntryDto)
         {
-            string[] errors = null;
+            string[]? errors = null;
 
             try
             {
@@ -209,7 +214,7 @@ namespace Api.Controllers
                     throw new Exception("One or more journal entry lines has duplicate account.");
 
                 bool isNew = journalEntryDto.Id == 0;
-                Core.Domain.Financials.JournalEntryHeader journalEntry = null;
+                Core.Domain.Financials.JournalEntryHeader? journalEntry = null;
 
                 if (isNew)
                 {
@@ -283,7 +288,7 @@ namespace Api.Controllers
         [Route("GeneralLedger")]
         public ActionResult GeneralLedger(DateTime? from = default(DateTime?),
             DateTime? to = default(DateTime?),
-            string accountCode = null,
+            string? accountCode = null,
             int? transactionNo = null)
         {
             var Dto = _financialService.MasterGeneralLedger(from, to, accountCode, transactionNo);
@@ -292,7 +297,7 @@ namespace Api.Controllers
             var generalLedgerTree = BuildMasterGeneralLedger(Dto);
 
             return new ObjectResult(generalLedgerTree);
- 
+
         }
 
         [HttpGet]
@@ -332,16 +337,32 @@ namespace Api.Controllers
 
         [HttpGet]
         [Route("IncomeStatement")]
-        // TODO: this generates an error a.ContraAccounts' is invalid inside an 'Include' operation
-        public ActionResult IncomeStatement()
+        public IActionResult IncomeStatement()
         {
-            var Dto = _financialService.IncomeStatement();
-            return new ObjectResult(Dto);
+            try
+            {
+                var incomeStatementData = _financialService.IncomeStatement();
+
+                // Ensure the data is not null
+                if (incomeStatementData == null)
+                {
+                    incomeStatementData = new List<IncomeStatement>();
+                }
+
+                return Ok(incomeStatementData);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = "Error fetching income statement", details = ex.Message });
+            }
         }
+
+
+
 
         #region Private Methods
         private IList<Dto.Financial.Account> BuildAccountGrouping(IList<Core.Domain.Financials.Account> allAccounts,
-                                          int? parentAccountId)
+        int? parentAccountId)
         {
             var accountTree = new List<Dto.Financial.Account>();
             var childAccounts = allAccounts.Where(o => o.ParentAccountId == parentAccountId).ToList();
@@ -376,7 +397,7 @@ namespace Api.Controllers
         {
             var ledgerTree = new List<Dto.Financial.MasterGeneralLedger>();
 
- 
+
             var parentLedger = allLedger.Select(a => a.TransactionNo).Distinct();
             var childLedgers = new List<Dto.Financial.MasterGeneralLedger>();
             parentLedger.ToList().ForEach(a =>
@@ -392,18 +413,18 @@ namespace Api.Controllers
                 secondChild.Date = null;
                 foreach (var ledger in childrenLedger)
                 {
-                        var thirdChild = new Dto.Financial.MasterGeneralLedger();
-                        thirdChild.Id = ledger.Id;
-                        thirdChild.TransactionNo = ledger.TransactionNo;
-                        thirdChild.AccountId = ledger.AccountId;
-                        thirdChild.AccountName = ledger.AccountName;
-                        thirdChild.AccountCode = ledger.AccountCode;
-                        thirdChild.CurrencyId = ledger.CurrencyId;
-                        thirdChild.Date = ledger.Date;
-                        thirdChild.Debit = ledger.Debit;
-                        thirdChild.Credit = ledger.Credit;
-                        thirdChildren.Add(thirdChild);
-                        secondChild.ChildMasterGeneralLedger = thirdChildren;                    
+                    var thirdChild = new Dto.Financial.MasterGeneralLedger();
+                    thirdChild.Id = ledger.Id;
+                    thirdChild.TransactionNo = ledger.TransactionNo;
+                    thirdChild.AccountId = ledger.AccountId;
+                    thirdChild.AccountName = ledger.AccountName;
+                    thirdChild.AccountCode = ledger.AccountCode;
+                    thirdChild.CurrencyId = ledger.CurrencyId;
+                    thirdChild.Date = ledger.Date;
+                    thirdChild.Debit = ledger.Debit;
+                    thirdChild.Credit = ledger.Credit;
+                    thirdChildren.Add(thirdChild);
+                    secondChild.ChildMasterGeneralLedger = thirdChildren;
                 }
 
                 childLedgers.Add(secondChild);

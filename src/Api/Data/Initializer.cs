@@ -1,16 +1,12 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Reflection;
-using System.Text;
+using Core.Domain.Financials;
 using Services.Administration;
 using Services.Financial;
 using Services.Inventory;
 using Services.Purchasing;
 using Services.Sales;
 using Services.Security;
-using Core.Domain.Financials;
+using System.Reflection;
+using System.Text;
 
 namespace Api.Data
 {
@@ -103,7 +99,7 @@ namespace Api.Data
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Setup() - An error occured during initialization of database. Clear() method will be called to rollback any changes. Error Message = " + ex.Message);
+                Console.WriteLine("Setup() - An error occurred during initialization of database. Clear() method will be called to rollback any changes. Error Message = " + ex.Message);
                 return false;
             }
         }
@@ -142,7 +138,7 @@ namespace Api.Data
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Clear() - An error occured during clearing database. You may need to re-create the database and run Setup() again. Error Message = " + ex.Message);
+                Console.WriteLine("Clear() - An error occurred during clearing database. You may need to re-create the database and run Setup() again. Error Message = " + ex.Message);
                 return false;
             }
         }
@@ -185,6 +181,7 @@ namespace Api.Data
                     Name = "Financial Solutions Inc.",
                     CompanyCode = "100",
                     ShortName = "FSI",
+                    CRA = "012345678"
                 };
 
                 _adminService.SaveCompany(defaultCompany);
@@ -203,8 +200,8 @@ namespace Api.Data
                 //if (_financialService.GetAccounts().Any()) return accountClasses;
                 string[,] values;
                 var assembly = Assembly.GetEntryAssembly();
-                var resourceStream = assembly.GetManifestResourceStream("Api.Data.coa.csv");
-                using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
+                var resourceStream = assembly!.GetManifestResourceStream("Api.Data.coa.csv");
+                using (var reader = new StreamReader(resourceStream!, Encoding.UTF8))
                 {
                     var coa = reader.ReadToEndAsync().Result;
                     values = LoadCsv(coa);
@@ -249,7 +246,7 @@ namespace Api.Data
                     var account = accounts.FirstOrDefault(a => a.AccountCode == accountCode);
                     var parentAccount = accounts.FirstOrDefault(a => a.AccountCode == parentAccountCode);
                     if (parentAccount != null)
-                        account.ParentAccount = parentAccount;
+                        account!.ParentAccount = parentAccount;
                 }
 
                 var assetClass = new Core.Domain.Financials.AccountClass
@@ -333,8 +330,8 @@ namespace Api.Data
                 if (_financialService.GetAccounts().Any()) return;
                 string[,] values;
                 var assembly = Assembly.GetEntryAssembly();
-                var resourceStream = assembly.GetManifestResourceStream("Api.Data.coa.csv");
-                using (var reader = new StreamReader(resourceStream, Encoding.UTF8))
+                var resourceStream = assembly!.GetManifestResourceStream("Api.Data.coa.csv");
+                using (var reader = new StreamReader(resourceStream!, Encoding.UTF8))
                 {
                     var coa = reader.ReadToEndAsync().Result;
                     values = LoadCsv(coa);
@@ -379,7 +376,7 @@ namespace Api.Data
                     var account = accounts.FirstOrDefault(a => a.AccountCode == accountCode);
                     var parentAccount = accounts.FirstOrDefault(a => a.AccountCode == parentAccountCode);
                     if (parentAccount != null)
-                        account.ParentAccount = parentAccount;
+                        account!.ParentAccount = parentAccount;
                 }
 
                 var assetClass = new Core.Domain.Financials.AccountClass
@@ -448,7 +445,7 @@ namespace Api.Data
             }
             catch (System.Exception ex)
             {
-                Console.WriteLine("SetupChartOfAccountsAndAccountClasses() encounterd an Exception - " + ex.StackTrace);
+                Console.WriteLine("SetupChartOfAccountsAndAccountClasses() encountered an Exception - " + ex.StackTrace);
                 throw;
             }
 
@@ -502,7 +499,7 @@ namespace Api.Data
 
         private void SetupLedgerSetting(Core.Domain.Company company)
         {
-            Core.Domain.Financials.GeneralLedgerSetting glSetting = null;
+            Core.Domain.Financials.GeneralLedgerSetting? glSetting = null;
             if (_financialService.GetGeneralLedgerSetting() == null)
             {
                 glSetting = new Core.Domain.Financials.GeneralLedgerSetting
@@ -685,7 +682,7 @@ namespace Api.Data
             customer.SalesAccountId = accountSales != null ? (int?)accountSales.Id : null;
             customer.CustomerAdvancesAccountId = accountAdvances != null ? (int?)accountAdvances.Id : null;
             customer.SalesDiscountAccountId = accountSalesDiscount != null ? (int?)accountSalesDiscount.Id : null;
-            customer.TaxGroupId = _financialService.GetTaxGroups().FirstOrDefault(tg => tg.Description == "VAT").Id;
+            customer.TaxGroupId = _financialService.GetTaxGroups().FirstOrDefault(tg => tg.Description == "VAT")!.Id;
             customer.Party = customerParty;
 
             Core.Domain.Contact primaryContact = new Core.Domain.Contact

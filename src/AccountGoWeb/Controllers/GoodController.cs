@@ -1,20 +1,18 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Configuration;
-using System.Net.Http;
 
 namespace AccountGoWeb.Controllers
 {
     public class GoodController : Controller
     {
-        protected IConfiguration _configuration;
+        protected IConfiguration? _configuration;
 
         protected HttpResponseMessage Get(string uri)
         {
             string responseJson = string.Empty;
             using (var client = new HttpClient())
             {
-                var baseUri = _configuration["ApiUrl"];
-                client.BaseAddress = new System.Uri(baseUri);
+                string? baseUri = _configuration!["ApiUrl"];
+                client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
                 var response = client.GetAsync(baseUri + uri);
                 return response.Result;
@@ -26,8 +24,8 @@ namespace AccountGoWeb.Controllers
             string responseJson = string.Empty;
             using (var client = new HttpClient())
             {
-                var baseUri = _configuration["ApiUrl"];
-                client.BaseAddress = new System.Uri(baseUri);
+                string? baseUri = _configuration!["ApiUrl"];
+                client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
                 //client.DefaultRequestHeaders.Add("UserName", GetCurrentUserName());
@@ -42,8 +40,8 @@ namespace AccountGoWeb.Controllers
             string responseJson = string.Empty;
             using (var client = new HttpClient())
             {
-                var baseUri = _configuration["ApiUrl"];
-                client.BaseAddress = new System.Uri(baseUri);
+                string? baseUri = _configuration!["ApiUrl"];
+                client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
                 var response = await client.GetAsync(baseUri + uri);
                 if (response.IsSuccessStatusCode)
@@ -51,7 +49,7 @@ namespace AccountGoWeb.Controllers
                     responseJson = await response.Content.ReadAsStringAsync();
                 }
             }
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(responseJson);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(responseJson)!;
         }
 
         protected async System.Threading.Tasks.Task<string> PostAsync(string uri, StringContent data)
@@ -59,8 +57,8 @@ namespace AccountGoWeb.Controllers
             string responseJson = string.Empty;
             using (var client = new HttpClient())
             {
-                var baseUri = _configuration["ApiUrl"];
-                client.BaseAddress = new System.Uri(baseUri);
+                string? baseUri = _configuration!["ApiUrl"];
+                client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
                 //client.DefaultRequestHeaders.Add("UserName", GetCurrentUserName());
 
@@ -70,9 +68,7 @@ namespace AccountGoWeb.Controllers
                     responseJson = await response.Content.ReadAsStringAsync();
                 }
             }
-
-            return Newtonsoft.Json.JsonConvert.DeserializeObject<string>(responseJson);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<string>(responseJson)!;
         }
-
     }
 }
