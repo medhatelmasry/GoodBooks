@@ -1040,50 +1040,33 @@ video {
   transition-duration: 150ms;
 }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> de92485f5e170999a951c7dd433acb992f07f5f7
-/* Hide scrollbar for all elements */
-
 .hidden-scrollbar {
   overflow-y: scroll;
-  /* Enables vertical scrolling */
   -ms-overflow-style: none;
-  /* Hides scrollbar in IE and Edge */
   scrollbar-width: none;
-  /* Hides scrollbar in Firefox */
 }
 
-/* Hides scrollbar in Chrome, Safari, and Edge */
 
 .hidden-scrollbar::-webkit-scrollbar {
   display: none;
 }
 
-<<<<<<< HEAD
-=======
 li {
   list-style: none;
 }
 
->>>>>>> de92485f5e170999a951c7dd433acb992f07f5f7
 .disabled {
   pointer-events: none;
   opacity: 0.6;
   cursor: not-allowed;
 }
 
-<<<<<<< HEAD
 .ag-header-container{
   border: 1px solid #ccc;
   background-color: #134074;
   color: #fff;
 }
 
-=======
->>>>>>> d6e9a121938f71cea07c1a5c0b9674e02c31663d
-=======
 .dark .hover\:text-lightPrimary:hover {
   color: var(--lightPrimary);
 }
@@ -1108,7 +1091,6 @@ li {
   background-color: rgb(29 78 216 / var(--tw-bg-opacity, 1));
 }
 
->>>>>>> de92485f5e170999a951c7dd433acb992f07f5f7
 .hover\:bg-gray-100:hover {
   --tw-bg-opacity: 1;
   background-color: rgb(243 244 246 / var(--tw-bg-opacity, 1));
@@ -1209,14 +1191,11 @@ li {
   color: rgb(238 244 237 / var(--tw-text-opacity, 1));
 }
 
-<<<<<<< HEAD
-=======
 .dark\:hover\:bg-darkPrimary:hover:where(.dark, .dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(11 37 69 / var(--tw-bg-opacity, 1));
 }
 
->>>>>>> d6e9a121938f71cea07c1a5c0b9674e02c31663d
 .dark\:hover\:bg-gray-600:hover:where(.dark, .dark *) {
   --tw-bg-opacity: 1;
   background-color: rgb(75 85 99 / var(--tw-bg-opacity, 1));
@@ -1226,14 +1205,8 @@ li {
   --tw-bg-opacity: 1;
   background-color: rgb(55 65 81 / var(--tw-bg-opacity, 1));
 }
-<<<<<<< HEAD
-=======
 
 .dark\:hover\:text-white:hover:where(.dark, .dark *) {
   --tw-text-opacity: 1;
   color: rgb(255 255 255 / var(--tw-text-opacity, 1));
 }
-<<<<<<< HEAD
->>>>>>> d6e9a121938f71cea07c1a5c0b9674e02c31663d
-=======
->>>>>>> de92485f5e170999a951c7dd433acb992f07f5f7
