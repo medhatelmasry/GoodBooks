@@ -19,3 +19,9 @@
     opacity: 0.6;
     cursor: not-allowed;
 }
+
+.ag-header-container{
+  border: 1px solid #ccc;
+  background-color: #134074;
+  color: #fff;
+}
