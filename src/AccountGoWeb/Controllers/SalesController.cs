@@ -590,5 +590,10 @@ namespace AccountGoWeb.Controllers
             return RedirectToAction("SalesInvoices");
         }
 
+        public IActionResult DonationInvoices(){
+            return View();
+        }
+
+
     }
 }
