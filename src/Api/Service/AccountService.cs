@@ -24,19 +24,50 @@ public class AccountService : IAccountService
     }
 
     // Update an existing account
-    public async Task<Core.Domain.Financials.Account?> UpdateAccountAsync(string accountCode, Core.Domain.Financials.Account updatedAccount)
-    {
-        var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountCode == accountCode);
-        if (account == null)
-            return null;
+    // public async Task<Core.Domain.Financials.Account?> UpdateAccountAsync(string accountCode, Core.Domain.Financials.Account updatedAccount)
+    // {
+    //     var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountCode == accountCode);
+    //     if (account == null)
+    //         return null;
 
-        account.AccountName = updatedAccount.AccountName;
+    //     account.AccountName = updatedAccount.AccountName;
 
-        _context.Accounts.Update(account);
-        await _context.SaveChangesAsync();
+    //     _context.Accounts.Update(account);
+    //     await _context.SaveChangesAsync();
 
-        return account;
-    }
+    //     return account;
+    // }
+
+    public async Task<Core.Domain.Financials.Account> UpdateAccountAsync(string originalAccountCode, Core.Domain.Financials.Account account)
+{
+    // Find account by the original code
+    var existingAccount = await _context.Accounts
+        .FirstOrDefaultAsync(a => a.AccountCode == originalAccountCode);
+    
+    if (existingAccount == null)
+        return null;
+    
+    // Update properties
+    existingAccount.AccountCode = account.AccountCode;
+    existingAccount.AccountName = account.AccountName;
+    
+    // If we're updating other properties as well:
+    if (account.AccountClassId > 0)
+        existingAccount.AccountClassId = account.AccountClassId;
+    
+    if (account.ParentAccountId.HasValue)
+        existingAccount.ParentAccountId = account.ParentAccountId;
+    
+    if (account.CompanyId > 0)
+        existingAccount.CompanyId = account.CompanyId;
+    
+    existingAccount.Description = account.Description;
+    existingAccount.IsCash = account.IsCash;
+    existingAccount.IsContraAccount = account.IsContraAccount;
+    
+    await _context.SaveChangesAsync();
+    return existingAccount;
+}
 
 
     // Delete an account
