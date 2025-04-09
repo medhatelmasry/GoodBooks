@@ -6,6 +6,9 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Data\ChartOfAccounts.csv" />
+    <None Update="db\scripts\initial_data\*.sql">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../Core/Core.csproj" />
