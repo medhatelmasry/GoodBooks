@@ -1,3 +1,76 @@
-﻿<div id="divJournalEntry"></div>
-<script type="text/javascript" src="~/scripts/financials/journalentry.chunk.js">
+﻿@{
+    ViewBag.Title = "Add Journal Entry";
+}
+
+<h2>Add Journal Entry</h2>
+
+<form id="journalForm">
+    <label>Date:</label>
+    <input type="date" name="JournalDate" required /><br />
+
+    <label>Reference No:</label>
+    <input type="text" name="ReferenceNo" /><br />
+
+    <label>Memo:</label>
+    <textarea name="Memo"></textarea><br />
+
+    <hr />
+    <h4>Journal Entry Lines</h4>
+    <div id="entry-lines"></div>
+
+    <button type="button" onclick="addLine()">+ Add Line</button><br /><br />
+
+    <button type="submit">Submit</button>
+</form>
+
+<script>
+    let accounts = [];
+
+    async function loadAccounts() {
+        const response = await fetch('@ViewBag.ApiUrl/financials/accounts');
+        accounts = await response.json();
+    }
+
+    function addLine() {
+        const container = document.getElementById('entry-lines');
+        const lineIndex = container.children.length;
+
+        const div = document.createElement('div');
+        div.innerHTML = `
+            <select name="JournalEntryLines[${lineIndex}].AccountId">
+                ${accounts.map(acc => `<option value="${acc.id}">${acc.accountName}</option>`).join('')}
+            </select>
+            <input type="number" name="JournalEntryLines[${lineIndex}].Amount" step="0.01" />
+            <select name="JournalEntryLines[${lineIndex}].DrCr">
+                <option value="0">Debit</option>
+                <option value="1">Credit</option>
+            </select>
+            <input type="text" name="JournalEntryLines[${lineIndex}].Memo" />
+        `;
+        container.appendChild(div);
+    }
+
+    document.getElementById('journalForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const formData = new FormData(e.target);
+        const object = Object.fromEntries(formData.entries());
+
+        // Transform into correct structure
+        // You'll likely need custom logic to collect multiple JournalEntryLines properly
+
+        const response = await fetch('@ViewBag.ApiUrl/financials/savejournalentry', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(object)
+        });
+
+        if (response.ok) {
+            alert("Saved!");
+        } else {
+            alert("Error saving entry");
+        }
+    });
+
+    loadAccounts();
 </script>
