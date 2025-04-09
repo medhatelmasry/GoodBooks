@@ -50,27 +50,56 @@ public class AccountService : IAccountService
         return existingAccount;
     }
 
-    // Delete an account
+    // Delete an account with cascade option for child accounts
     public async Task<Core.Domain.Financials.Account?> DeleteAccountAsync(string accountCode)
     {
         var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountCode == accountCode);
         if (account == null)
             return null;
 
-        // Check if account has child accounts
-        bool hasChildren = await _context.Accounts.AnyAsync(a => a.ParentAccountId == account.Id);
-        if (hasChildren)
-            throw new InvalidOperationException("Cannot delete an account that has child accounts.");
-
+        // Get all accounts to find children (for recursive deletion)
+        var allAccounts = await _context.Accounts.ToListAsync();
+        
         // Check if account is used in journal entries
         bool usedInJournals = await _context.JournalEntryLines.AnyAsync(j => j.AccountId == account.Id);
         if (usedInJournals)
             throw new InvalidOperationException("Cannot delete an account that is used in journal entries.");
 
-        _context.Accounts.Remove(account);
+        // Delete the account and all its children recursively
+        await DeleteAccountWithChildrenAsync(account.Id, allAccounts);
+        
         await _context.SaveChangesAsync();
 
         return account;
+    }
+
+    // Recursive method to delete an account and all its children
+    private async Task DeleteAccountWithChildrenAsync(int accountId, List<Core.Domain.Financials.Account> allAccounts)
+    {
+        // Find all direct children of this account
+        var childAccounts = allAccounts.Where(a => a.ParentAccountId == accountId).ToList();
+        
+        // Recursively delete each child and its children
+        foreach (var childAccount in childAccounts)
+        {
+            // Check if child account is used in journal entries
+            bool childUsedInJournals = await _context.JournalEntryLines.AnyAsync(j => j.AccountId == childAccount.Id);
+            if (childUsedInJournals)
+                throw new InvalidOperationException($"Cannot delete account '{childAccount.AccountCode}' because it is used in journal entries.");
+                
+            // Delete this child's children first
+            await DeleteAccountWithChildrenAsync(childAccount.Id, allAccounts);
+            
+            // Then delete the child itself
+            _context.Accounts.Remove(childAccount);
+        }
+        
+        // Finally, delete the parent account
+        var account = await _context.Accounts.FindAsync(accountId);
+        if (account != null)
+        {
+            _context.Accounts.Remove(account);
+        }
     }
 
     // Get an account by AccountCode
