@@ -12,7 +12,13 @@
 
 @if (getError || accounts is null)
 {
-    <div class="alert alert-danger">Unable to get data. Please try again later.</div>
+    <div class="alert alert-danger">
+        <p>Unable to get data. Please try again later.</p>
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <p>@errorMessage</p>
+        }
+    </div>
 }
 else if (isLoading)
 {
@@ -55,9 +61,9 @@ else
                         <td>@account.TotalDebitBalance</td>
                         <td>@account.TotalCreditBalance</td>
                         <td>
-                            <button class="btn btn-primary" @onclick="() => OpenEditModal(account)">Edit</button>
-                            <button class="btn btn-danger" @onclick="() => OpenDeleteModal(account)">Delete</button>
-                            <button class="btn btn-success add-child-btn" @onclick="() => OpenAddChildModal(account)">Add</button>
+                            <button class="btn btn-primary" @onclick="(e) => OpenEditModal(account)">Edit</button>
+                            <button class="btn btn-danger" @onclick="(e) => OpenDeleteModal(account)">Delete</button>
+                            <button class="btn btn-success add-child-btn" @onclick="(e) => OpenAddChildModal(account)">Add</button>
                         </td>
                     </tr>
 
@@ -77,9 +83,9 @@ else
                                             <td>@childAccount.TotalDebitBalance</td>
                                             <td>@childAccount.TotalCreditBalance</td>
                                             <td>
-                                                <button class="btn btn-primary" @onclick="() => OpenEditModal(childAccount)">Edit</button>
-                                                <button class="btn btn-danger" @onclick="() => OpenDeleteModal(childAccount)">Delete</button>
-                                                <button class="btn btn-success add-child-btn" @onclick="() => OpenAddChildModal(childAccount)">Add Child</button>
+                                                <button class="btn btn-primary" @onclick="(e) => OpenEditModal(childAccount)">Edit</button>
+                                                <button class="btn btn-danger" @onclick="(e) => OpenDeleteModal(childAccount)">Delete</button>
+                                                <button class="btn btn-success add-child-btn" @onclick="(e) => OpenAddChildModal(childAccount)">Add Child</button>
                                             </td>
                                         </tr>
 
@@ -99,9 +105,9 @@ else
                                                                 <td>@grandChildAccount.TotalDebitBalance</td>
                                                                 <td>@grandChildAccount.TotalCreditBalance</td>
                                                                 <td>
-                                                                    <button class="btn btn-primary" @onclick="() => OpenEditModal(grandChildAccount)">Edit</button>
-                                                                    <button class="btn btn-danger" @onclick="() => OpenDeleteModal(grandChildAccount)">Delete</button>
-                                                                    <button class="btn btn-success add-child-btn" @onclick="() => OpenAddChildModal(grandChildAccount)">Add Child</button>
+                                                                    <button class="btn btn-primary" @onclick="(e) => OpenEditModal(grandChildAccount)">Edit</button>
+                                                                    <button class="btn btn-danger" @onclick="(e) => OpenDeleteModal(grandChildAccount)">Delete</button>
+                                                                    <button class="btn btn-success add-child-btn" @onclick="(e) => OpenAddChildModal(grandChildAccount)">Add Child</button>
                                                                 </td>
                                                             </tr>
 
@@ -118,9 +124,9 @@ else
                                                                                     <td>@greatGrandChildAccount.TotalDebitBalance</td>
                                                                                     <td>@greatGrandChildAccount.TotalCreditBalance</td>
                                                                                     <td>
-                                                                                        <button class="btn btn-primary" @onclick="() => OpenEditModal(greatGrandChildAccount)">Edit</button>
-                                                                                        <button class="btn btn-danger" @onclick="() => OpenDeleteModal(greatGrandChildAccount)">Delete</button>
-                                                                                        <button class="btn btn-success add-child-btn" @onclick="() => OpenAddChildModal(greatGrandChildAccount)">Add Child</button>
+                                                                                        <button class="btn btn-primary" @onclick="(e) => OpenEditModal(greatGrandChildAccount)">Edit</button>
+                                                                                        <button class="btn btn-danger" @onclick="(e) => OpenDeleteModal(greatGrandChildAccount)">Delete</button>
+                                                                                        <button class="btn btn-success add-child-btn" @onclick="(e) => OpenAddChildModal(greatGrandChildAccount)">Add Child</button>
                                                                                     </td>
                                                                                 </tr>
                                                                             }
@@ -161,7 +167,7 @@ else
                                @oninput="e => selectedAccount!.AccountCode = e.Value?.ToString() ?? string.Empty" />
                         @if (validationErrors.ContainsKey(nameof(AccountViewModel.AccountCode)))
                         {
-                            <div class="validation-message">@validationErrors[nameof(AccountViewModel.AccountCode)]</div>
+                            <div class="invalid-feedback">@validationErrors[nameof(AccountViewModel.AccountCode)]</div>
                         }
                     </div>
                     <div class="mb-3">
@@ -170,7 +176,7 @@ else
                                @bind="selectedAccount!.AccountName" />
                         @if (validationErrors.ContainsKey(nameof(AccountViewModel.AccountName)))
                         {
-                            <div class="validation-message">@validationErrors[nameof(AccountViewModel.AccountName)]</div>
+                            <div class="invalid-feedback">@validationErrors[nameof(AccountViewModel.AccountName)]</div>
                         }
                     </div>
                 </div>
@@ -200,7 +206,7 @@ else
                                @oninput="e => selectedAccount!.AccountCode = e.Value?.ToString() ?? string.Empty" />
                         @if (validationErrors.ContainsKey(nameof(AccountViewModel.AccountCode)))
                         {
-                            <div class="validation-message">@validationErrors[nameof(AccountViewModel.AccountCode)]</div>
+                            <div class="invalid-feedback">@validationErrors[nameof(AccountViewModel.AccountCode)]</div>
                         }
                     </div>
                     <div class="mb-3">
@@ -209,12 +215,9 @@ else
                                @bind="selectedAccount!.AccountName" />
                         @if (validationErrors.ContainsKey(nameof(AccountViewModel.AccountName)))
                         {
-                            <div class="validation-message">@validationErrors[nameof(AccountViewModel.AccountName)]</div>
+                            <div class="invalid-feedback">@validationErrors[nameof(AccountViewModel.AccountName)]</div>
                         }
                     </div>
-                    
-                    <!-- Tracking original account code for updates -->
-                    <input type="hidden" @bind="originalAccountCode" />
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CloseModal">Cancel</button>
@@ -240,6 +243,10 @@ else
                         <strong>@selectedAccount?.AccountName</strong> 
                         with code <strong>@selectedAccount?.AccountCode</strong>?
                     </p>
+                    @if (!string.IsNullOrEmpty(errorMessage))
+                    {
+                        <div class="alert alert-danger">@errorMessage</div>
+                    }
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" @onclick="CloseDeleteModal">Cancel</button>
@@ -274,6 +281,7 @@ else
     {
         isLoading = true;
         getError = false;
+        errorMessage = string.Empty;
         
         try
         {
@@ -308,13 +316,13 @@ else
     private void OpenAddModal()
     {
         validationErrors.Clear();
+        errorMessage = string.Empty;
         selectedAccount = new AccountViewModel
         {
             AccountClassId = 1, // Assets
             CompanyId = 1
         };
         parentAccount = null;
-        errorMessage = string.Empty;
         isAddModalVisible = true;
         isAddChildModalVisible = false;
     }
@@ -322,6 +330,7 @@ else
     private void OpenAddChildModal(AccountViewModel parent)
     {
         validationErrors.Clear();
+        errorMessage = string.Empty;
         parentAccount = parent;
         selectedAccount = new AccountViewModel
         {
@@ -331,20 +340,15 @@ else
             // Suggest a code based on parent's code
             AccountCode = SuggestChildCode(parent.AccountCode)
         };
-        errorMessage = string.Empty;
         isAddChildModalVisible = true;
         isAddModalVisible = false;
     }
 
     private string SuggestChildCode(string parentCode)
     {
-        // This is a simple implementation - you might want to adjust based on your account code structure
-        // For example, if parent is "1000", suggest "1001" for the child
-        
         // Find existing child accounts with the same parent code prefix
-        var existingCodes = accounts
-            .SelectMany(a => GetAllChildAccounts(a))
-            .Where(a => a.AccountCode.StartsWith(parentCode))
+        var existingCodes = GetAllAccounts()
+            .Where(a => a.AccountCode.StartsWith(parentCode) && a.AccountCode != parentCode)
             .Select(a => a.AccountCode)
             .ToList();
             
@@ -359,23 +363,41 @@ else
             .OrderBy(c => c)
             .LastOrDefault();
             
-        if (int.TryParse(highestCode, out int codeValue))
+        // Try to parse the suffix
+        if (highestCode != null && highestCode.Length > parentCode.Length)
         {
-            return (codeValue + 1).ToString().PadLeft(highestCode.Length, '0');
+            string suffix = highestCode.Substring(parentCode.Length);
+            if (int.TryParse(suffix, out int suffixValue))
+            {
+                return $"{parentCode}{(suffixValue + 1).ToString().PadLeft(suffix.Length, '0')}";
+            }
         }
         
-        // Fallback if parsing fails
+        // Fallback
         return $"{parentCode}01";
     }
 
-    private List<AccountViewModel> GetAllChildAccounts(AccountViewModel account)
+    private List<AccountViewModel> GetAllAccounts()
+    {
+        var allAccounts = new List<AccountViewModel>();
+        
+        foreach (var account in accounts)
+        {
+            allAccounts.Add(account);
+            allAccounts.AddRange(GetAllChildAccountsRecursive(account.ChildAccounts));
+        }
+        
+        return allAccounts;
+    }
+    
+    private List<AccountViewModel> GetAllChildAccountsRecursive(List<AccountViewModel> children)
     {
         var result = new List<AccountViewModel>();
-        result.Add(account);
         
-        foreach(var child in account.ChildAccounts)
+        foreach (var child in children)
         {
-            result.AddRange(GetAllChildAccounts(child));
+            result.Add(child);
+            result.AddRange(GetAllChildAccountsRecursive(child.ChildAccounts));
         }
         
         return result;
@@ -384,6 +406,7 @@ else
     private void OpenEditModal(AccountViewModel account)
     {
         validationErrors.Clear();
+        errorMessage = string.Empty;
         originalAccountCode = account.AccountCode; // Store the original code for API calls
         selectedAccount = new AccountViewModel
         {
@@ -409,11 +432,13 @@ else
         selectedAccount = null;
         parentAccount = null;
         validationErrors.Clear();
+        errorMessage = string.Empty;
     }
 
     private void OpenDeleteModal(AccountViewModel account)
     {
         selectedAccount = account;
+        errorMessage = string.Empty;
         isDeleteModalVisible = true;
     }
 
@@ -421,6 +446,7 @@ else
     {
         isDeleteModalVisible = false;
         selectedAccount = null;
+        errorMessage = string.Empty;
     }
 
     private bool ValidateAccount()
@@ -434,16 +460,40 @@ else
             validationErrors[nameof(AccountViewModel.AccountCode)] = "Account Code is required";
             isValid = false;
         }
-        else if (!isEditModalVisible && accounts.Any(a => a.AccountCode == selectedAccount.AccountCode))
+        else if (selectedAccount.AccountCode.Any(c => !char.IsDigit(c)))
         {
-            validationErrors[nameof(AccountViewModel.AccountCode)] = "Account Code already exists";
+            validationErrors[nameof(AccountViewModel.AccountCode)] = "Account Code must contain only digits";
             isValid = false;
         }
-        else if (isEditModalVisible && selectedAccount.AccountCode != originalAccountCode && 
-                accounts.Any(a => a.AccountCode == selectedAccount.AccountCode))
+        else 
         {
-            validationErrors[nameof(AccountViewModel.AccountCode)] = "Account Code already exists";
-            isValid = false;
+            // Check for duplicates, considering the edit case
+            bool isDuplicate = false;
+            
+            if (isEditModalVisible)
+            {
+                // When editing, we only have a conflict if:
+                // 1. The code has changed from the original
+                // 2. The new code exists elsewhere in the system
+                if (selectedAccount.AccountCode != originalAccountCode)
+                {
+                    isDuplicate = GetAllAccounts().Any(a => 
+                        a.AccountCode == selectedAccount.AccountCode && 
+                        a.Id != selectedAccount.Id);
+                }
+            }
+            else
+            {
+                // For new accounts, simply check if the code exists
+                isDuplicate = GetAllAccounts().Any(a => 
+                    a.AccountCode == selectedAccount.AccountCode);
+            }
+            
+            if (isDuplicate)
+            {
+                validationErrors[nameof(AccountViewModel.AccountCode)] = "Account Code already exists";
+                isValid = false;
+            }
         }
 
         // Validate Account Name
@@ -467,15 +517,25 @@ else
         }
 
         isLoading = true;
+        errorMessage = string.Empty;
+        
         try
         {
             string? apiUrl = Configuration["ApiUrl"];
+            if (string.IsNullOrEmpty(apiUrl))
+            {
+                errorMessage = "API URL not configured";
+                return;
+            }
+            
             var client = ClientFactory.CreateClient();
-
             HttpResponseMessage response;
+
             if (isEditModalVisible)
             {
-                // Use the original account code in the URL but send the potentially updated code in the body
+                Console.WriteLine($"Updating account: {originalAccountCode} -> {selectedAccount.AccountCode}");
+                
+                // Use the original account code in the URL for the API to find the account
                 response = await client.PutAsJsonAsync(
                     $"{apiUrl}financials/updateaccount/{originalAccountCode}", 
                     selectedAccount);
@@ -487,6 +547,8 @@ else
                     selectedAccount);
             }
 
+            string responseBody = await response.Content.ReadAsStringAsync();
+            
             if (response.IsSuccessStatusCode)
             {
                 await LoadAccountsFromApi();
@@ -494,11 +556,9 @@ else
             }
             else
             {
-                errorMessage = await response.Content.ReadAsStringAsync();
-                if (string.IsNullOrEmpty(errorMessage))
-                {
-                    errorMessage = $"Failed to save account. Status: {response.StatusCode}";
-                }
+                errorMessage = string.IsNullOrEmpty(responseBody) 
+                    ? $"Failed to save account. Status: {response.StatusCode}" 
+                    : responseBody;
             }
         }
         catch (Exception ex)
@@ -517,9 +577,25 @@ else
         if (selectedAccount == null) return;
 
         isLoading = true;
+        errorMessage = string.Empty;
+        
         try
         {
             string? apiUrl = Configuration["ApiUrl"];
+            if (string.IsNullOrEmpty(apiUrl))
+            {
+                errorMessage = "API URL not configured";
+                return;
+            }
+            
+            // First check if the account has children
+            if (selectedAccount.ChildAccounts.Count > 0)
+            {
+                errorMessage = "Cannot delete an account that has child accounts.";
+                isLoading = false;
+                return;
+            }
+
             var response = await ClientFactory.CreateClient()
                 .DeleteAsync($"{apiUrl}financials/deleteaccount/{selectedAccount.AccountCode}");
 
@@ -530,7 +606,10 @@ else
             }
             else
             {
-                errorMessage = $"Failed to delete account. Status: {response.StatusCode}";
+                string responseBody = await response.Content.ReadAsStringAsync();
+                errorMessage = string.IsNullOrEmpty(responseBody) 
+                    ? $"Failed to delete account. Status: {response.StatusCode}" 
+                    : responseBody;
             }
         }
         catch (Exception ex)

@@ -14,61 +14,41 @@ public class AccountService : IAccountService
     // Add a new account
     public async Task<Core.Domain.Financials.Account> AddAccountAsync(Core.Domain.Financials.Account newAccount)
     {
-        // newAccount.Balance = 0; // Ensure read-only fields are initialized
-        // newAccount.DebitBalance = 0;
-        // newAccount.CreditBalance = 0;
-
         _context.Accounts.Add(newAccount);
         await _context.SaveChangesAsync();
         return newAccount;
     }
 
     // Update an existing account
-    // public async Task<Core.Domain.Financials.Account?> UpdateAccountAsync(string accountCode, Core.Domain.Financials.Account updatedAccount)
-    // {
-    //     var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountCode == accountCode);
-    //     if (account == null)
-    //         return null;
-
-    //     account.AccountName = updatedAccount.AccountName;
-
-    //     _context.Accounts.Update(account);
-    //     await _context.SaveChangesAsync();
-
-    //     return account;
-    // }
-
     public async Task<Core.Domain.Financials.Account> UpdateAccountAsync(string originalAccountCode, Core.Domain.Financials.Account account)
-{
-    // Find account by the original code
-    var existingAccount = await _context.Accounts
-        .FirstOrDefaultAsync(a => a.AccountCode == originalAccountCode);
-    
-    if (existingAccount == null)
-        return null;
-    
-    // Update properties
-    existingAccount.AccountCode = account.AccountCode;
-    existingAccount.AccountName = account.AccountName;
-    
-    // If we're updating other properties as well:
-    if (account.AccountClassId > 0)
-        existingAccount.AccountClassId = account.AccountClassId;
-    
-    if (account.ParentAccountId.HasValue)
-        existingAccount.ParentAccountId = account.ParentAccountId;
-    
-    if (account.CompanyId > 0)
-        existingAccount.CompanyId = account.CompanyId;
-    
-    existingAccount.Description = account.Description;
-    existingAccount.IsCash = account.IsCash;
-    existingAccount.IsContraAccount = account.IsContraAccount;
-    
-    await _context.SaveChangesAsync();
-    return existingAccount;
-}
+    {
+        // Find account by the original code
+        var existingAccount = await _context.Accounts
+            .FirstOrDefaultAsync(a => a.AccountCode == originalAccountCode);
 
+        if (existingAccount == null)
+            return null;
+
+        // Update properties
+        existingAccount.AccountCode = account.AccountCode;
+        existingAccount.AccountName = account.AccountName;
+        existingAccount.Description = account.Description;
+        existingAccount.IsCash = account.IsCash;
+        existingAccount.IsContraAccount = account.IsContraAccount;
+
+        // Optional properties that might not be provided
+        if (account.AccountClassId > 0)
+            existingAccount.AccountClassId = account.AccountClassId;
+        
+        if (account.CompanyId > 0)
+            existingAccount.CompanyId = account.CompanyId;
+            
+        if (account.ParentAccountId.HasValue)
+            existingAccount.ParentAccountId = account.ParentAccountId;
+
+        await _context.SaveChangesAsync();
+        return existingAccount;
+    }
 
     // Delete an account
     public async Task<Core.Domain.Financials.Account?> DeleteAccountAsync(string accountCode)
@@ -76,6 +56,16 @@ public class AccountService : IAccountService
         var account = await _context.Accounts.FirstOrDefaultAsync(a => a.AccountCode == accountCode);
         if (account == null)
             return null;
+
+        // Check if account has child accounts
+        bool hasChildren = await _context.Accounts.AnyAsync(a => a.ParentAccountId == account.Id);
+        if (hasChildren)
+            throw new InvalidOperationException("Cannot delete an account that has child accounts.");
+
+        // Check if account is used in journal entries
+        bool usedInJournals = await _context.JournalEntryLines.AnyAsync(j => j.AccountId == account.Id);
+        if (usedInJournals)
+            throw new InvalidOperationException("Cannot delete an account that is used in journal entries.");
 
         _context.Accounts.Remove(account);
         await _context.SaveChangesAsync();
@@ -94,6 +84,4 @@ public class AccountService : IAccountService
     {
         return await _context.Accounts.ToListAsync();
     }
-
-
 }

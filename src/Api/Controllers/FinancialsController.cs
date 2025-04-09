@@ -421,48 +421,48 @@ namespace Api.Controllers
         }
 
         [HttpPut]
-[Route("UpdateAccount/{accountCode}")]
-public async Task<IActionResult> UpdateAccount(string accountCode, [FromBody] Account updatedAccountDto)
-{
-    if (!ModelState.IsValid)
-        return BadRequest(ModelState);
+        [Route("UpdateAccount/{accountCode}")]
+        public async Task<IActionResult> UpdateAccount(string accountCode, [FromBody] Account updatedAccountDto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-    var updated = await _accountService.UpdateAccountAsync(accountCode, new Core.Domain.Financials.Account
-    {
-        AccountCode = updatedAccountDto.AccountCode, // This might be different from the accountCode parameter
-        AccountName = updatedAccountDto.AccountName,
-        AccountClassId = updatedAccountDto.AccountClassId,
-        ParentAccountId = updatedAccountDto.ParentAccountId,
-        CompanyId = updatedAccountDto.CompanyId,
-        Description = updatedAccountDto.Description,
-        IsCash = updatedAccountDto.IsCash,
-        IsContraAccount = updatedAccountDto.IsContraAccount
-    });
+            var updated = await _accountService.UpdateAccountAsync(accountCode, new Core.Domain.Financials.Account
+            {
+                AccountCode = updatedAccountDto.AccountCode, // This might be different from the accountCode parameter
+                AccountName = updatedAccountDto.AccountName,
+                AccountClassId = updatedAccountDto.AccountClassId,
+                ParentAccountId = updatedAccountDto.ParentAccountId,
+                CompanyId = updatedAccountDto.CompanyId,
+                Description = updatedAccountDto.Description,
+                IsCash = updatedAccountDto.IsCash,
+                IsContraAccount = updatedAccountDto.IsContraAccount
+            });
 
-    if (updated == null)
-        return NotFound();
+            if (updated == null)
+                return NotFound();
 
-    // return simplified DTO to avoid Balance-related null issues
-    var resultDto = new Dto.Financial.Account
-    {
-        Id = updated.Id,
-        AccountCode = updated.AccountCode,
-        AccountName = updated.AccountName,
-        AccountClassId = updated.AccountClassId,
-        ParentAccountId = updated.ParentAccountId,
-        CompanyId = updated.CompanyId,
-        Description = updated.Description,
-        IsCash = updated.IsCash,
-        IsContraAccount = updated.IsContraAccount,
-        Balance = 0,
-        DebitBalance = 0,
-        CreditBalance = 0
-    };
+            // return simplified DTO to avoid Balance-related null issues
+            var resultDto = new Dto.Financial.Account
+            {
+                Id = updated.Id,
+                AccountCode = updated.AccountCode,
+                AccountName = updated.AccountName,
+                AccountClassId = updated.AccountClassId,
+                ParentAccountId = updated.ParentAccountId,
+                CompanyId = updated.CompanyId,
+                Description = updated.Description,
+                IsCash = updated.IsCash,
+                IsContraAccount = updated.IsContraAccount,
+                Balance = 0,
+                DebitBalance = 0,
+                CreditBalance = 0
+            };
 
-    return Ok(resultDto);
-}
+            return Ok(resultDto);
+        }
 
-        
+
 
 
         [HttpDelete]
