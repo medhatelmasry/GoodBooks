@@ -429,8 +429,14 @@ namespace Api.Controllers
 
             var updated = await _accountService.UpdateAccountAsync(accountCode, new Core.Domain.Financials.Account
             {
-                AccountCode = updatedAccountDto.AccountCode,
+                AccountCode = updatedAccountDto.AccountCode, // This might be different from the accountCode parameter
                 AccountName = updatedAccountDto.AccountName,
+                AccountClassId = updatedAccountDto.AccountClassId,
+                ParentAccountId = updatedAccountDto.ParentAccountId,
+                CompanyId = updatedAccountDto.CompanyId,
+                Description = updatedAccountDto.Description,
+                IsCash = updatedAccountDto.IsCash,
+                IsContraAccount = updatedAccountDto.IsContraAccount
             });
 
             if (updated == null)
@@ -455,6 +461,8 @@ namespace Api.Controllers
 
             return Ok(resultDto);
         }
+
+
 
 
         [HttpDelete]
