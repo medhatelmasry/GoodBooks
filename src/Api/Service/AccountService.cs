@@ -20,7 +20,7 @@ public class AccountService : IAccountService
     }
 
     // Update an existing account
-    public async Task<Core.Domain.Financials.Account> UpdateAccountAsync(string originalAccountCode, Core.Domain.Financials.Account account)
+    public async Task<Core.Domain.Financials.Account?> UpdateAccountAsync(string originalAccountCode, Core.Domain.Financials.Account account)
     {
         // Find account by the original code
         var existingAccount = await _context.Accounts
