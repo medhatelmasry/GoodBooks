@@ -25,6 +25,7 @@ namespace Api.Controllers
         private readonly IPurchasingService _purchasingService;
         private readonly IInventoryService _inventoryService;
         private readonly ISecurityService _securityService;
+        
 
         public AdministrationController(IAdministrationService adminService,
             IFinancialService financialService,
@@ -241,40 +242,66 @@ namespace Api.Controllers
             return new ObjectResult(userDto);
         }
 
-        [HttpPost]
-        [Route("SaveCompany")]
-        public IActionResult SaveCompany([FromBody]Company companyDto)
+[HttpPost]
+[Route("SaveCompany")]
+public IActionResult SaveCompany([FromBody]Company companyDto)
+{
+    string[] errors;
+    try
+    {
+        if (!ModelState.IsValid)
         {
-            string[] errors;
-            try
-            {
-                if (!ModelState.IsValid)
-                {
-                    errors = new string[ModelState.ErrorCount];
-                    foreach (var val in ModelState.Values)
-                        for (var i = 0; i < ModelState.ErrorCount; i++)
-                            errors[i] = val.Errors[i].ErrorMessage;
-                    return new BadRequestObjectResult(errors);
-                }
-
-                Core.Domain.Company company = companyDto.Id == 0
-                    ? new Core.Domain.Company()
-                    : _adminService.GetDefaultCompany();
-
-                company.CompanyCode = companyDto.CompanyCode;
-                company.Name = companyDto.Name;
-                company.ShortName = companyDto.ShortName;
-                company.CRA = companyDto.CRA;
-
-                _adminService.SaveCompany(company);
-
-                return new ObjectResult(Ok());
-            }
-            catch (Exception ex)
-            {
-                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
-                return new BadRequestObjectResult(errors);
-            }
+            errors = new string[ModelState.ErrorCount];
+            foreach (var val in ModelState.Values)
+                for (var i = 0; i < ModelState.ErrorCount; i++)
+                    errors[i] = val.Errors[i].ErrorMessage;
+            return new BadRequestObjectResult(errors);
         }
+
+        // Check if the user is authenticated
+        string username;
+        if (User.Identity.IsAuthenticated && !string.IsNullOrEmpty(User.Identity.Name))
+        {
+            // Use the authenticated user's username
+            username = User.Identity.Name;
+            Console.WriteLine($"Using authenticated username: {username}");
+        }
+        else
+        {
+            // Fall back to the test username
+            username = "admin";
+            Console.WriteLine($"Using fallback test username: {username}");
+        }
+        
+        // Set the current user in the AuditContext
+        Core.Domain.Auditing.AuditContext.CurrentUser = username;
+
+        Core.Domain.Company company = companyDto.Id == 0
+            ? new Core.Domain.Company()
+            : _adminService.GetDefaultCompany();
+
+        company.CompanyCode = companyDto.CompanyCode;
+        company.Name = companyDto.Name;
+        company.ShortName = companyDto.ShortName;
+        company.CRA = companyDto.CRA;
+        
+        // Set the ModifiedBy property if it exists
+        if (company.GetType().GetProperty("ModifiedBy") != null)
+        {
+            company.GetType().GetProperty("ModifiedBy").SetValue(company, username);
+        }
+
+        // Call SaveCompany in the service
+        _adminService.SaveCompany(company);
+
+        return new ObjectResult(Ok());
+    }
+    catch (Exception ex)
+    {
+        errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+        return new BadRequestObjectResult(errors);
+    }
+}
+
     }
 }
