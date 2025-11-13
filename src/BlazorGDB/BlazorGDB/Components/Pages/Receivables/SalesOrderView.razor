@@ -1,0 +1,179 @@
+@page "/receivables/sales-order/{id:int}"
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Dto.Sales
+@inject IHttpClientFactory ClientFactory
+@inject NavigationManager NavigationManager
+
+<PageTitle>Sales Order</PageTitle>
+
+<h3>Sales Order</h3>
+
+@if (isLoading)
+{
+    <p><em>Loading sales order...</em></p>
+}
+else if (getError)
+{
+    <p>Unable to load sales order. Please try again later.</p>
+    <button class="btn btn-secondary" @onclick="NavigateBack">Back to List</button>
+}
+else if (salesOrder != null)
+{
+    <div class="mb-3">
+        <button class="btn btn-secondary" @onclick="NavigateBack">
+            <i class="bi bi-arrow-left"></i> Back to List
+        </button>
+        <button class="btn btn-primary" @onclick="EditOrder">
+            <i class="bi bi-pencil"></i> Edit
+        </button>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Order No:</strong></div>
+                        <div class="col-sm-8">@salesOrder.No</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Customer:</strong></div>
+                        <div class="col-sm-8">@salesOrder.CustomerName</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Order Date:</strong></div>
+                        <div class="col-sm-8">@salesOrder.OrderDate.ToShortDateString()</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Reference No:</strong></div>
+                        <div class="col-sm-8">@salesOrder.ReferenceNo</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Status:</strong></div>
+                        <div class="col-sm-8">@GetStatusText(salesOrder.StatusId)</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Total Amount:</strong></div>
+                        <div class="col-sm-8">@salesOrder.Amount?.ToString("C")</div>
+                    </div>
+                </div>
+            </div>
+
+            @if (salesOrder.SalesOrderLines != null && salesOrder.SalesOrderLines.Any())
+            {
+                <hr />
+                <h5>Order Lines</h5>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Amount</th>
+                            <th>Discount</th>
+                            <th>Measurement</th>
+                            <th>Remaining to Invoice</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var line in salesOrder.SalesOrderLines)
+                        {
+                            <tr>
+                                <td>@line.ItemDescription</td>
+                                <td>@line.Quantity</td>
+                                <td>@line.Amount?.ToString("C")</td>
+                                <td>@line.Discount?.ToString("P")</td>
+                                <td>@line.MeasurementDescription</td>
+                                <td>@line.RemainingQtyToInvoice</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public int Id { get; set; }
+
+    private SalesOrder? salesOrder;
+    private bool isLoading = true;
+    private bool getError = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSalesOrder();
+    }
+
+    private async Task LoadSalesOrder()
+    {
+        isLoading = true;
+        getError = false;
+
+        try
+        {
+            string apiUrl = System.Environment.GetEnvironmentVariable("APIURL") ?? "http://localhost:8001/api/";
+            var request = new HttpRequestMessage(HttpMethod.Get, $"{apiUrl}sales/salesorder?id={Id}");
+            request.Headers.Add("Accept", "application/json");
+
+            var client = ClientFactory.CreateClient();
+            client.DefaultRequestHeaders.Accept.Clear();
+            client.DefaultRequestHeaders.Clear();
+            client.DefaultRequestHeaders.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue() { NoCache = true };
+            client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+
+            var response = await client.SendAsync(request).ConfigureAwait(false);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var responseString = await response.Content.ReadAsStringAsync();
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                };
+
+                salesOrder = JsonSerializer.Deserialize<SalesOrder>(responseString, options);
+            }
+            else
+            {
+                getError = true;
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading sales order: {ex.Message}");
+            getError = true;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private void NavigateBack()
+    {
+        NavigationManager.NavigateTo("/receivables/sales-orders");
+    }
+
+    private void EditOrder()
+    {
+        NavigationManager.NavigateTo($"/receivables/sales-order/edit/{Id}");
+    }
+
+    private string GetStatusText(int statusId)
+    {
+        return statusId switch
+        {
+            1 => "Open",
+            2 => "Partially Invoiced",
+            3 => "Invoiced",
+            4 => "Cancelled",
+            5 => "Closed",
+            6 => "Fully Invoiced",
+            _ => "Unknown"
+        };
+    }
+}
