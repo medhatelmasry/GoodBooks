@@ -3,6 +3,7 @@
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @using Dto.Sales
+@using Microsoft.AspNetCore.Components.Forms
 @inject IHttpClientFactory ClientFactory
 @inject NavigationManager NavigationManager
 
@@ -17,6 +18,8 @@
 else if (salesOrder != null)
 {
     <EditForm Model="@salesOrder" OnValidSubmit="HandleSubmit">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
         <div class="card">
             <div class="card-body">
                 <div class="row mb-3">
