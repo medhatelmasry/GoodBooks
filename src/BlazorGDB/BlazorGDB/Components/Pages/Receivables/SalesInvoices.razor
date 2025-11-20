@@ -1,9 +1,177 @@
 ﻿@page "/receivables/sales-invoices"
+@using Dto.Sales
+@rendermode InteractiveServer
 
 <PageTitle>Sales Invoices</PageTitle>
 
 <h3>Sales Invoices</h3>
 
-@code {
+<style>
+    .table-active {
+        background-color: #d1ecf1 !important;
+    }
 
+</style>
+
+<div class="mb-3">
+    <a href="/receivables/add-sales-invoice" class="btn btn-primary">
+        <i class="fa fa-plus"></i>
+        New Invoice
+    </a>
+    <a href="@GetEditInvoiceLink()" class="btn @(selectedInvoice != null ? "btn-secondary" : "btn-secondary disabled")">
+        <i class="fa fa-edit"></i>
+        Edit
+    </a>
+    <button type="button" class="btn @(selectedInvoice != null ? "btn-danger" : "btn-secondary disabled")" 
+            @onclick="ShowDeleteModal" disabled="@(selectedInvoice == null)">
+        <i class="fa fa-trash"></i>
+        Delete
+    </button>
+</div>
+
+<div>
+    @if (isLoading)
+    {
+        <p><em>Loading invoices...</em></p>
+    }
+    else if (salesInvoices == null || !salesInvoices.Any())
+    {
+        <div class="text-center py-5">
+            <p class="text-muted">No Rows To Show</p>
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive" style="height: 400px; overflow-y: auto;">
+            <table class="table table-striped table-hover">
+                <thead class="table-light sticky-top">
+                    <tr>
+                        <th>No</th>
+                        <th>Customer Name</th>
+                        <th>Invoiced Date</th>
+                        <th>Amount</th>
+                        <th>Ref no</th>
+                        <th>Posted</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var invoice in salesInvoices)
+                    {
+                        <tr @onclick="@(() => SelectInvoice(invoice))" 
+                            class="@(selectedInvoice?.Id == invoice.Id ? "table-active" : "")">
+                            <td>@invoice.No</td>
+                            <td>@invoice.CustomerName</td>
+                            <td>@invoice.InvoiceDate.ToString("yyyy-MM-dd")</td>
+                            <td>@invoice.Amount.ToString("C")</td>
+                            <td>@invoice.ReferenceNo</td>
+                            <td>
+                                <input type="checkbox" checked="@invoice.Posted" disabled />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+@* Delete Modal *@
+@if (showDeleteModal)
+{
+    <div class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete</h5>
+                    <button type="button" class="btn-close" @onclick="CloseDeleteModal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Do you want to delete this invoice?</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-primary btn-flat" type="button" @onclick="DeleteInvoice">Yes</button>
+                    <button class="btn btn-sm btn-default btn-flat" type="button" @onclick="CloseDeleteModal">No</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+
+@code {
+    private List<SalesInvoice>? salesInvoices;
+    private SalesInvoice? selectedInvoice;
+    private bool isLoading = true;
+    private bool showDeleteModal = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadInvoices();
+    }
+
+    private async Task LoadInvoices()
+    {
+        isLoading = true;
+        
+        try
+        {
+            // TODO: Replace with actual API call
+            // Example: salesInvoices = await HttpClient.GetFromJsonAsync<List<SalesInvoice>>("/api/salesinvoices");
+            
+            salesInvoices = new List<SalesInvoice>();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading invoices: {ex.Message}");
+            salesInvoices = new List<SalesInvoice>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+        
+        await Task.CompletedTask;
+    }
+
+    private void SelectInvoice(SalesInvoice invoice)
+    {
+        selectedInvoice = invoice;
+        Console.WriteLine($"Selected invoice: {invoice.No} (ID: {invoice.Id})");
+    }
+
+    private string GetEditInvoiceLink()
+    {
+        return selectedInvoice != null 
+            ? $"/receivables/sales-invoice/{selectedInvoice.Id}" 
+            : "#";
+    }
+
+    private void ShowDeleteModal()
+    {
+        if (selectedInvoice != null)
+        {
+            showDeleteModal = true;
+        }
+    }
+
+    private void CloseDeleteModal()
+    {
+        showDeleteModal = false;
+    }
+
+    private async Task DeleteInvoice()
+    {
+        if (selectedInvoice != null)
+        {
+            Console.WriteLine($"Deleting invoice: {selectedInvoice.No}");
+            
+            // TODO: Call API to delete the invoice
+            // Example: await HttpClient.DeleteAsync($"/api/salesinvoices/{selectedInvoice.Id}");
+            
+            salesInvoices?.Remove(selectedInvoice);
+            selectedInvoice = null;
+            showDeleteModal = false;
+            
+            await Task.CompletedTask;
+        }
+    }
 }
