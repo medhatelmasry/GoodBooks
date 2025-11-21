@@ -1,12 +1,9 @@
-﻿@page "/payables/vendors"
 @using Dto.Purchasing
 @inject HttpClient Http
 @inject NavigationManager Navigation
-@rendermode InteractiveServer
-
-<PageTitle>Vendors</PageTitle>
 
 <div class="container-fluid">
+
     <div class="row mb-3">
         <div class="col">
             <h3>Vendors</h3>
@@ -16,12 +13,12 @@
     <div class="row mb-3">
         <div class="col">
             <button class="btn btn-primary" @onclick="NavigateToNewVendor">
-                <i class="bi bi-plus-circle"></i> New Vendor
+                <i class="fa fa-plus"></i> New Vendor
             </button>
             @if (selectedVendor != null)
             {
                 <button class="btn btn-secondary ms-2" @onclick="NavigateToViewVendor">
-                    <i class="bi bi-pencil"></i> View/Edit
+                    <i class="fa fa-edit"></i> View/Edit
                 </button>
             }
         </div>
@@ -38,22 +35,26 @@
             </div>
         </div>
     }
+
     else if (errorMessage != null)
+
     {
         <div class="row">
             <div class="col">
                 <div class="alert alert-danger" role="alert">
-                    <i class="bi bi-exclamation-triangle"></i> @errorMessage
+                    <i class="fa fa-exclamation-triangle"></i> @errorMessage
                 </div>
             </div>
         </div>
     }
+
     else if (vendors == null || !vendors.Any())
+
     {
         <div class="row">
             <div class="col">
                 <div class="alert alert-info" role="alert">
-                    <i class="bi bi-info-circle"></i> No vendors found.
+                    <i class="fa fa-info-circle"></i> No vendors found.
                 </div>
             </div>
         </div>
@@ -64,46 +65,52 @@
             <div class="col">
                 <div class="table-responsive">
                     <table class="table table-striped table-hover table-bordered">
-                        <thead class="table-dark">
+
+                        <thead class="thead-dark">
                             <tr>
-                                <th @onclick="() => SortBy(nameof(Vendor.No))">
+                                <th @onclick="() => SortBy(nameof(Vendor.No))" style="cursor: pointer;">
                                     No @GetSortIcon(nameof(Vendor.No))
                                 </th>
-                                <th @onclick="() => SortBy(nameof(Vendor.Name))">
+                                <th @onclick="() => SortBy(nameof(Vendor.Name))" style="cursor: pointer;">
                                     Name @GetSortIcon(nameof(Vendor.Name))
                                 </th>
-                                <th @onclick="() => SortBy(nameof(Vendor.Phone))">
+                                <th @onclick="() => SortBy(nameof(Vendor.Phone))" style="cursor: pointer;">
                                     Phone @GetSortIcon(nameof(Vendor.Phone))
                                 </th>
-                                <th @onclick="() => SortBy(nameof(Vendor.Contact))">
+                                <th @onclick="() => SortBy(nameof(Vendor.Contact))" style="cursor: pointer;">
                                     Contact @GetSortIcon(nameof(Vendor.Contact))
                                 </th>
-                                <th @onclick="() => SortBy(nameof(Vendor.TaxGroup))">
+                                <th @onclick="() => SortBy(nameof(Vendor.TaxGroup))" style="cursor: pointer;">
                                     Tax Group @GetSortIcon(nameof(Vendor.TaxGroup))
                                 </th>
-                                <th @onclick="() => SortBy(nameof(Vendor.Balance))">
+                                <th @onclick="() => SortBy(nameof(Vendor.Balance))" style="cursor: pointer;">
                                     Balance @GetSortIcon(nameof(Vendor.Balance))
                                 </th>
                             </tr>
                         </thead>
+
                         <tbody>
                             @foreach (var vendor in vendors)
                             {
                                 <tr @onclick="() => SelectVendor(vendor)"
                                     class="@(selectedVendor?.Id == vendor.Id ? "table-active" : "")" style="cursor: pointer;">
+                                    
                                     <td>
-                                        <a href="/payables/vendor/@vendor.Id" class="text-decoration-none">
+                                        <a href="/purchasing/vendor/@vendor.Id">
                                             @vendor.No
                                         </a>
                                     </td>
+
                                     <td>@vendor.Name</td>
                                     <td>@vendor.Phone</td>
                                     <td>@vendor.Contact</td>
                                     <td>@vendor.TaxGroup</td>
-                                    <td class="text-end">@vendor.Balance.ToString("N2")</td>
+
+                                    <td class="text-right">@vendor.Balance.ToString("N2")</td>
                                 </tr>
                             }
                         </tbody>
+
                     </table>
                 </div>
             </div>
@@ -138,7 +145,8 @@
 
         try
         {
-            var apiUrl = "http://localhost:8001/api/purchasing/vendors";
+            string baseApiUrl = Environment.GetEnvironmentVariable("APIURL") ?? "http://localhost:8001/api/";
+            var apiUrl = baseApiUrl + "purchasing/vendors";
             var response = await Http.GetAsync(apiUrl);
 
             if (response.IsSuccessStatusCode)
@@ -151,14 +159,17 @@
                 errorMessage = $"Failed to load vendors. Status: {response.StatusCode}";
             }
         }
+
         catch (HttpRequestException ex)
         {
             errorMessage = $"Network error: {ex.Message}. Please ensure the API is running on port 8001.";
         }
+
         catch (Exception ex)
         {
             errorMessage = $"Error loading vendors: {ex.Message}";
         }
+
         finally
         {
             isLoading = false;
@@ -172,14 +183,14 @@
 
     private void NavigateToNewVendor()
     {
-        Navigation.NavigateTo("/payables/vendor/new");
+        Navigation.NavigateTo("/purchasing/vendor/-1");
     }
 
     private void NavigateToViewVendor()
     {
         if (selectedVendor != null)
         {
-            Navigation.NavigateTo($"/payables/vendor/{selectedVendor.Id}");
+            Navigation.NavigateTo($"/purchasing/vendor/{selectedVendor.Id}");
         }
     }
 
@@ -202,18 +213,23 @@
             nameof(Vendor.No) => sortAscending
             ? vendors.OrderBy(v => v.No).ToList()
             : vendors.OrderByDescending(v => v.No).ToList(),
+
             nameof(Vendor.Name) => sortAscending
             ? vendors.OrderBy(v => v.Name).ToList()
             : vendors.OrderByDescending(v => v.Name).ToList(),
+
             nameof(Vendor.Phone) => sortAscending
             ? vendors.OrderBy(v => v.Phone).ToList()
             : vendors.OrderByDescending(v => v.Phone).ToList(),
+            
             nameof(Vendor.Contact) => sortAscending
             ? vendors.OrderBy(v => v.Contact).ToList()
             : vendors.OrderByDescending(v => v.Contact).ToList(),
+
             nameof(Vendor.TaxGroup) => sortAscending
             ? vendors.OrderBy(v => v.TaxGroup).ToList()
             : vendors.OrderByDescending(v => v.TaxGroup).ToList(),
+            
             nameof(Vendor.Balance) => sortAscending
             ? vendors.OrderBy(v => v.Balance).ToList()
             : vendors.OrderByDescending(v => v.Balance).ToList(),
