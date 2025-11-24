@@ -87,7 +87,7 @@
                                 <tr @onclick="() => SelectInvoice(invoice)"
                                     class="@(selectedInvoice?.Id == invoice.Id ? "table-active" : "")" style="cursor: pointer;">
                                     <td>
-                                        <a href="/sales/sales-invoice/@invoice.Id">
+                                        <a href="/sales/AddSalesInvoice/@invoice.Id">
                                             @invoice.No
                                         </a>
                                     </td>
@@ -193,14 +193,14 @@
 
     private void NavigateToNewInvoice()
     {
-        Navigation.NavigateTo("/sales/add-sales-invoice", forceLoad: true);
+        Navigation.NavigateTo("/sales/AddSalesInvoice", forceLoad: true);
     }
 
     private void NavigateToEditInvoice()
     {
         if (selectedInvoice != null)
         {
-            Navigation.NavigateTo($"/sales/sales-invoice/{selectedInvoice.Id}", forceLoad: true);
+            Navigation.NavigateTo($"/sales/AddSalesInvoice/{selectedInvoice.Id}", forceLoad: true);
         }
     }
 

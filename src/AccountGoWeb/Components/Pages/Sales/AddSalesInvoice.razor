@@ -1,6 +1,5 @@
-
 @page "/sales/add-sales-invoice"
-@page "/sales/salesinvoice/{Id:int}"
+@page "/sales/sales-invoice/{Id:int}"
 @using Dto.Sales
 @inject HttpClient Http
 @inject NavigationManager Navigation
@@ -9,11 +8,6 @@
 <PageTitle>@(Id.HasValue ? "Edit" : "Add") Sales Invoice</PageTitle>
 
 <div class="container-fluid">
-    <div class="row mb-3">
-        <div class="col">
-            <h3>@(Id.HasValue ? "Edit" : "Add") Sales Invoice</h3>
-        </div>
-    </div>
 
     @if (isLoading)
     {
@@ -43,10 +37,23 @@
             
             <div class="card">
                 <div class="card-body">
+                    @* Invoice ID *@
+                    @if (Id.HasValue)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-sm-2">
+                                <label class="form-label" style="color: white;">Invoice ID</label>
+                            </div>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" value="@Id" readonly />
+                            </div>
+                        </div>
+                    }
+                    
                     @* Customer *@
                     <div class="row mb-3">
                         <div class="col-sm-2">
-                            <label class="form-label">Customer</label>
+                            <label class="form-label" style="color: white;">Customer</label>
                         </div>
                         <div class="col-sm-10">
                             <InputSelect class="form-control" @bind-Value="Model.CustomerId" id="optCustomer">
@@ -63,7 +70,7 @@
                     @* Payment Term *@
                     <div class="row mb-3">
                         <div class="col-sm-2">
-                            <label class="form-label">Payment Term</label>
+                            <label class="form-label" style="color: white;">Payment Term</label>
                         </div>
                         <div class="col-sm-10">
                             <InputSelect class="form-control" @bind-Value="Model.PaymentTermId" id="optPayment">
@@ -80,7 +87,7 @@
                     @* Posted *@
                     <div class="row mb-4">
                         <div class="col-sm-2">
-                            <label class="form-label">Posted</label>
+                            <label class="form-label" style="color: white;">Posted</label>
                         </div>
                         <div class="col-sm-10">
                             <InputCheckbox @bind-Value="Model.Posted" id="chkPosted" />
@@ -182,6 +189,8 @@
 
     protected override async Task OnInitializedAsync()
     {
+        isLoading = true;
+        
         if (Id.HasValue)
         {
             await LoadInvoice();
@@ -195,6 +204,8 @@
         }
         
         await LoadDropdownData();
+        
+        isLoading = false;
     }
 
     private async Task LoadInvoice()
@@ -299,7 +310,7 @@
             
             if (response.IsSuccessStatusCode)
             {
-                Navigation.NavigateTo("/sales/salesinvoices");
+                Navigation.NavigateTo("/Sales/SalesInvoices", forceLoad: true);
             }
             else
             {
@@ -317,7 +328,7 @@
 
     private void NavigateToInvoiceList()
     {
-        Navigation.NavigateTo("/sales/salesinvoices");
+        Navigation.NavigateTo("/Sales/SalesInvoices", forceLoad: true);
     }
 
     private void OnItemChanged(int index)
