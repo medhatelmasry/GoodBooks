@@ -252,36 +252,65 @@
         {
             string baseApiUrl = Environment.GetEnvironmentVariable("APIURL") ?? "http://localhost:8001/api/";
             
-            // TODO: Replace with actual API calls to load dropdown data
-            // Example: var customersResponse = await Http.GetAsync(baseApiUrl + "sales/customers");
-            
-            Customers = new List<SelectListItem>
+            // Load Customers from API
+            var customersResponse = await Http.GetAsync(baseApiUrl + "sales/customers");
+            if (customersResponse.IsSuccessStatusCode)
             {
-                new SelectListItem { Value = "1", Text = "Acme Corporation" },
-                new SelectListItem { Value = "2", Text = "Global Industries" },
-                new SelectListItem { Value = "3", Text = "Tech Solutions Inc" }
-            };
+                var customers = await customersResponse.Content.ReadFromJsonAsync<List<CustomerResponse>>();
+                Customers = new List<SelectListItem>();
+                if (customers != null)
+                {
+                    foreach (var customer in customers)
+                    {
+                        Customers.Add(new SelectListItem { Value = customer.Id.ToString(), Text = customer.Name ?? string.Empty });
+                    }
+                }
+            }
 
-            PaymentTerms = new List<SelectListItem>
+            // Load Payment Terms from API
+            var paymentTermsResponse = await Http.GetAsync(baseApiUrl + "common/paymentterms");
+            if (paymentTermsResponse.IsSuccessStatusCode)
             {
-                new SelectListItem { Value = "1", Text = "Net 30" },
-                new SelectListItem { Value = "2", Text = "Net 60" },
-                new SelectListItem { Value = "3", Text = "Due on Receipt" }
-            };
+                var paymentTerms = await paymentTermsResponse.Content.ReadFromJsonAsync<List<PaymentTermResponse>>();
+                PaymentTerms = new List<SelectListItem>();
+                if (paymentTerms != null)
+                {
+                    foreach (var term in paymentTerms)
+                    {
+                        PaymentTerms.Add(new SelectListItem { Value = term.Id.ToString(), Text = term.Description ?? string.Empty });
+                    }
+                }
+            }
 
-            Items = new List<SelectListItem>
+            // Load Items from API
+            var itemsResponse = await Http.GetAsync(baseApiUrl + "inventory/items");
+            if (itemsResponse.IsSuccessStatusCode)
             {
-                new SelectListItem { Value = "1", Text = "HOA Dues" },
-                new SelectListItem { Value = "2", Text = "Service Fee" },
-                new SelectListItem { Value = "3", Text = "Maintenance" }
-            };
+                var items = await itemsResponse.Content.ReadFromJsonAsync<List<ItemResponse>>();
+                Items = new List<SelectListItem>();
+                if (items != null)
+                {
+                    foreach (var item in items)
+                    {
+                        Items.Add(new SelectListItem { Value = item.Id.ToString(), Text = item.Description ?? string.Empty });
+                    }
+                }
+            }
 
-            Measurements = new List<SelectListItem>
+            // Load Measurements from API
+            var measurementsResponse = await Http.GetAsync(baseApiUrl + "common/measurements");
+            if (measurementsResponse.IsSuccessStatusCode)
             {
-                new SelectListItem { Value = "1", Text = "Each" },
-                new SelectListItem { Value = "2", Text = "Box" },
-                new SelectListItem { Value = "3", Text = "Unit" }
-            };
+                var measurements = await measurementsResponse.Content.ReadFromJsonAsync<List<MeasurementResponse>>();
+                Measurements = new List<SelectListItem>();
+                if (measurements != null)
+                {
+                    foreach (var measurement in measurements)
+                    {
+                        Measurements.Add(new SelectListItem { Value = measurement.Id.ToString(), Text = measurement.Description ?? string.Empty });
+                    }
+                }
+            }
         }
         catch (HttpRequestException ex)
         {
@@ -360,5 +389,29 @@
     {
         public string Value { get; set; } = string.Empty;
         public string Text { get; set; } = string.Empty;
+    }
+
+    public class CustomerResponse
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+    }
+
+    public class PaymentTermResponse
+    {
+        public int Id { get; set; }
+        public string? Description { get; set; }
+    }
+
+    public class ItemResponse
+    {
+        public int Id { get; set; }
+        public string? Description { get; set; }
+    }
+
+    public class MeasurementResponse
+    {
+        public int Id { get; set; }
+        public string? Description { get; set; }
     }
 }
