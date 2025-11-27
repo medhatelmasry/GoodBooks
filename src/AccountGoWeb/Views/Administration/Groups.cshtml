@@ -1,9 +1,17 @@
 ﻿@model IEnumerable<Dto.Security.Group>
 @using AccountGoWeb.Models;
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i> No groups found.
+    </div>
+}
+
 <div class="col-sm-3">
     <div class="box">
         <div class="box-header with-border">
-            <h3 class="box-title">Groups</h3>
+            <h3 class="box-title">Groups (@(Model?.Count() ?? 0))</h3>
             <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse">
                     <i class="fa fa-minus"></i>
@@ -12,14 +20,28 @@
         </div>
         <div class="box-body">
             <div id="divRoles">
-                <table>
-                    @foreach (var role in Model)
-                    {
-                        <tr>
-                            <td>@role.DisplayName</td>
-                        </tr>
-                    }
-                </table>
+                @if (Model != null && Model.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Group Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var group in Model)
+                            {
+                                <tr>
+                                    <td>@(group.DisplayName ?? group.Name)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">No groups available.</p>
+                }
             </div>
         </div>
     </div>

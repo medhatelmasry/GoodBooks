@@ -107,7 +107,7 @@ namespace Services.Security
                 UserId = userId,
                 SecurityRoleId = securityRoleId
             };
-            
+
             _securityUserRoleRepo.Insert(item);
         }
 
@@ -139,7 +139,7 @@ namespace Services.Security
             if (user.IsSysAdmin())
             {
                 var permissionsSysAdmin = from p in _securityPermissionRepo.Table.ToList()
-                                  select p.Name;
+                                          select p.Name;
 
                 return permissionsSysAdmin;
             }
@@ -149,7 +149,7 @@ namespace Services.Security
             var permissions = roles.SelectMany(r => r.SecurityRole.Permissions).ToList().AsQueryable();
 
             var all = from p in permissions
-                   select p.SecurityPermission.Name;
+                      select p.SecurityPermission.Name;
 
             return all;
         }
@@ -161,7 +161,7 @@ namespace Services.Security
 
         public List<int> GetPermissionByRoleId(int securityRoleId)
         {
-            return _securityRolePermissionRepo.Table.Where(x => x.SecurityRoleId == securityRoleId).Select(x=>x.SecurityPermissionId).ToList();
+            return _securityRolePermissionRepo.Table.Where(x => x.SecurityRoleId == securityRoleId).Select(x => x.SecurityPermissionId).ToList();
         }
 
         //public void RemoveRolePermission(int roleId)
@@ -180,10 +180,16 @@ namespace Services.Security
 
         public void AddRole(string roleName, int roleId = 0)
         {
-            if(roleId > 0)
+            if (roleId > 0)
             {
                 var entity = _securityRoleRepo.GetById(roleId);
                 entity.Name = roleName;
+
+                // Set DisplayName if not already set
+                if (string.IsNullOrEmpty(entity.DisplayName))
+                {
+                    entity.DisplayName = ConvertToDisplayName(roleName);
+                }
 
                 _securityRoleRepo.Update(entity);
             }
@@ -192,10 +198,23 @@ namespace Services.Security
                 var role = new SecurityRole()
                 {
                     Name = roleName,
+                    DisplayName = ConvertToDisplayName(roleName)
                 };
 
                 _securityRoleRepo.Insert(role);
             }
+        }
+
+        private string ConvertToDisplayName(string roleName)
+        {
+            // Convert camelCase or PascalCase to Display Name
+            if (roleName == "SystemAdministrators")
+                return "System Administrators";
+            if (roleName == "GeneralUsers")
+                return "General Users";
+
+            // Default: add spaces before capitals
+            return System.Text.RegularExpressions.Regex.Replace(roleName, "([a-z])([A-Z])", "$1 $2");
         }
 
         public void DeleteRole(int roleId)

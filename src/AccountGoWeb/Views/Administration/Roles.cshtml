@@ -1,5 +1,13 @@
 ﻿@model IEnumerable<Dto.Security.Role>
 @using AccountGoWeb.Models;
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i> No roles found.
+    </div>
+}
+
 <div>
     <a href="~/administration/role" class="btn inactiveLink">
         <i class="fa fa-plus"></i>
@@ -13,7 +21,7 @@
 <div class="col-sm-3">
     <div class="box">
         <div class="box-header with-border">
-            <h3 class="box-title">Roles</h3>
+            <h3 class="box-title">Roles (@(Model?.Count() ?? 0))</h3>
             <div class="box-tools pull-right">
                 <button type="button" class="btn btn-box-tool" data-widget="collapse" data-toggle="tooltip" title="Collapse">
                     <i class="fa fa-minus"></i>
@@ -22,14 +30,28 @@
         </div>
         <div class="box-body">
             <div id="divRoles">
-                <table>
-                    @foreach (var role in Model)
-                    {
-                        <tr>
-                            <td>@role.DisplayName</td>
-                        </tr>
-                    }
-                </table>
+                @if (Model != null && Model.Any())
+                {
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Role Name</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var role in Model)
+                            {
+                                <tr>
+                                    <td>@(role.DisplayName ?? role.Name)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="text-muted">No roles available.</p>
+                }
             </div>
         </div>
     </div>

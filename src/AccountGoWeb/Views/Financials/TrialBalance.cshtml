@@ -9,28 +9,38 @@
         @DateTime.Now.ToShortDateString()
     </h3>
 </div>
-<div>
-    <table class="table">
-        <tr style="font-weight: bold;">
-            <td>Account Code</td>
-            <td>Account Name</td>
-            <td style="text-align: right;">Debit</td>
-            <td style="text-align: right;">Credit</td>
-        </tr>
-        @foreach (var account in Model)
-        {
-            <tr>
-                <td>@Html.ActionLink((string)string.Format("{0}", account.AccountCode), "account", new { id = account.AccountId })</td>
-                <td>@account.AccountName</td>
-                <td style="text-align: right;">@account.Debit</td>
-                <td style="text-align: right;">@account.Credit</td>
+
+@if (Model == null || !Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="fa fa-info-circle"></i> No trial balance data available. This may be because you don't have permission to access financial data or there are no transactions yet.
+    </div>
+}
+else
+{
+    <div>
+        <table class="table">
+            <tr style="font-weight: bold;">
+                <td>Account Code</td>
+                <td>Account Name</td>
+                <td style="text-align: right;">Debit</td>
+                <td style="text-align: right;">Credit</td>
             </tr>
-        }
-        <tr style="font-weight: bold; text-align: right;">
-            <td></td>
-            <td>Total</td>
-            <td>@Model.Sum(m => m.Debit)</td>
-            <td>@Model.Sum(m => m.Credit)</td>
-        </tr>
-    </table>
-</div>
+            @foreach (var account in Model)
+            {
+                <tr>
+                    <td>@Html.ActionLink((string)string.Format("{0}", account.AccountCode), "account", new { id = account.AccountId })</td>
+                    <td>@account.AccountName</td>
+                    <td style="text-align: right;">@account.Debit</td>
+                    <td style="text-align: right;">@account.Credit</td>
+                </tr>
+            }
+            <tr style="font-weight: bold; text-align: right;">
+                <td></td>
+                <td>Total</td>
+                <td>@Model.Sum(m => m.Debit)</td>
+                <td>@Model.Sum(m => m.Credit)</td>
+            </tr>
+        </table>
+    </div>
+}

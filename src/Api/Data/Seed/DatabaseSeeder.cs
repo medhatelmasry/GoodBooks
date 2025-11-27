@@ -50,8 +50,37 @@ namespace Api.Data.Seed
 
                 // Also setup security roles in application domain
                 Console.WriteLine("=== Setting up Application Security Roles ===");
-                securityService.AddRole("SystemAdministrators");
-                securityService.AddRole("GeneralUsers");
+
+                // Add roles if they don't exist
+                var existingRoles = securityService.GetAllSecurityRole().ToList();
+                if (!existingRoles.Any(r => r.Name == "SystemAdministrators"))
+                {
+                    securityService.AddRole("SystemAdministrators");
+                    Console.WriteLine("✅ Created 'SystemAdministrators' role");
+                }
+                else
+                {
+                    Console.WriteLine("✅ 'SystemAdministrators' role already exists");
+                }
+
+                if (!existingRoles.Any(r => r.Name == "GeneralUsers"))
+                {
+                    securityService.AddRole("GeneralUsers");
+                    Console.WriteLine("✅ Created 'GeneralUsers' role");
+                }
+                else
+                {
+                    Console.WriteLine("✅ 'GeneralUsers' role already exists");
+                }
+
+                // Update existing roles that don't have DisplayName set
+                existingRoles = securityService.GetAllSecurityRole().ToList();
+                foreach (var role in existingRoles.Where(r => string.IsNullOrEmpty(r.DisplayName)))
+                {
+                    securityService.AddRole(role.Name, role.Id); // This will set DisplayName
+                    Console.WriteLine($"✅ Updated DisplayName for role '{role.Name}'");
+                }
+
                 Console.WriteLine("✅ Application security roles created");
 
                 // NOW create admin user (after roles exist)
@@ -124,9 +153,9 @@ namespace Api.Data.Seed
             {
                 Console.WriteLine($"Checking if user '{adminEmail}' exists...");
                 var existingUser = await userManager.FindByEmailAsync(adminEmail);
-                
+
                 ApplicationUser adminUser;
-                
+
                 if (existingUser != null)
                 {
                     Console.WriteLine($"✅ Admin user '{adminEmail}' already exists in Identity.");
@@ -186,7 +215,7 @@ namespace Api.Data.Seed
                 try
                 {
                     var savedUser = securityService.GetUser(adminEmail);
-                    
+
                     if (savedUser == null)
                     {
                         Console.WriteLine($"Creating user '{adminEmail}' in application domain...");
@@ -200,17 +229,17 @@ namespace Api.Data.Seed
 
                         adminService.SaveUser(domainUser);
                         Console.WriteLine($"✅ User '{adminEmail}' created in application domain.");
-                        
+
                         savedUser = securityService.GetUser(adminEmail);
                     }
                     else
                     {
                         Console.WriteLine($"✅ User '{adminEmail}' already exists in application domain.");
                     }
-                    
+
                     // Ensure user is in SystemAdministrators role in application domain
                     var adminRole = securityService.GetAllSecurityRole().FirstOrDefault(r => r.Name == "SystemAdministrators");
-                    
+
                     if (savedUser != null && adminRole != null)
                     {
                         var userRoles = securityService.GetRolesForUser(adminEmail);
@@ -250,9 +279,9 @@ namespace Api.Data.Seed
             {
                 Console.WriteLine($"Checking if user '{userEmail}' exists...");
                 var existingUser = await userManager.FindByEmailAsync(userEmail);
-                
+
                 ApplicationUser generalUser;
-                
+
                 if (existingUser != null)
                 {
                     Console.WriteLine($"✅ General user '{userEmail}' already exists in Identity.");
@@ -312,7 +341,7 @@ namespace Api.Data.Seed
                 try
                 {
                     var savedUser = securityService.GetUser(userEmail);
-                    
+
                     if (savedUser == null)
                     {
                         Console.WriteLine($"Creating user '{userEmail}' in application domain...");
@@ -326,17 +355,17 @@ namespace Api.Data.Seed
 
                         adminService.SaveUser(domainUser);
                         Console.WriteLine($"✅ User '{userEmail}' created in application domain.");
-                        
+
                         savedUser = securityService.GetUser(userEmail);
                     }
                     else
                     {
                         Console.WriteLine($"✅ User '{userEmail}' already exists in application domain.");
                     }
-                    
+
                     // Ensure user is in GeneralUsers role in application domain
                     var generalRole = securityService.GetAllSecurityRole().FirstOrDefault(r => r.Name == "GeneralUsers");
-                    
+
                     if (savedUser != null && generalRole != null)
                     {
                         var userRoles = securityService.GetRolesForUser(userEmail);
