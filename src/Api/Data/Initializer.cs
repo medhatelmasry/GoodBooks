@@ -185,7 +185,7 @@ namespace Api.Data
                 };
 
                 _adminService.SaveCompany(defaultCompany);
-//                Console.WriteLine($"Default company returned = {defaultCompany.Id}");
+                //                Console.WriteLine($"Default company returned = {defaultCompany.Id}");
                 return defaultCompany;
             }
         }

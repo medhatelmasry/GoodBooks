@@ -88,21 +88,52 @@ app.MapControllers().RequireRateLimiting("fixed");
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
 
-    var apiDbContext = services.GetRequiredService<ApiDbContext>();
-    if (!apiDbContext.Database.GetAppliedMigrations().Any())
-    {
-        apiDbContext.Database.Migrate();
-    }
+    // Wait for MigrationService to complete database setup
+    logger.LogInformation("⏳ Waiting for database migrations to complete...");
 
     var identityDbContext = services.GetRequiredService<ApplicationIdentityDbContext>();
-    if (!identityDbContext.Database.GetAppliedMigrations().Any())
+    var apiDbContext = services.GetRequiredService<ApiDbContext>();
+
+    // Wait up to 60 seconds for migrations to complete
+    int attempts = 0;
+    while (attempts < 12)
     {
-        identityDbContext.Database.Migrate();
+        try
+        {
+            if (identityDbContext.Database.CanConnect() && apiDbContext.Database.CanConnect())
+            {
+                var identityMigrations = identityDbContext.Database.GetAppliedMigrations().ToList();
+                var apiMigrations = apiDbContext.Database.GetAppliedMigrations().ToList();
+
+                if (identityMigrations.Any() && apiMigrations.Any())
+                {
+                    logger.LogInformation($"✅ Migrations completed! Identity: {identityMigrations.Count}, API: {apiMigrations.Count}");
+                    break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning($"Attempt {attempts + 1}/12: Waiting for migrations... ({ex.Message})");
+        }
+
+        await Task.Delay(TimeSpan.FromSeconds(5));
+        attempts++;
     }
 
-    var seeder = services.GetRequiredService<DatabaseSeeder>();
-    seeder.Seed();
+    if (attempts >= 12)
+    {
+        logger.LogError("❌ Migrations did not complete in time. Database seeding skipped.");
+    }
+    else
+    {
+        // Migrations are handled by MigrationService in Aspire orchestration
+        // Just run the seeder to populate initial data
+        var seeder = services.GetRequiredService<DatabaseSeeder>();
+        seeder.Seed();
+    }
 }
 
 app.Run();

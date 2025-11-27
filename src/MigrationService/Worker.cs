@@ -25,11 +25,18 @@ public class Worker(
         try
         {
             using var scope = serviceProvider.CreateScope();
-            var dbContext = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+            var apiDbContext = scope.ServiceProvider.GetRequiredService<ApiDbContext>();
+            var identityDbContext = scope.ServiceProvider.GetRequiredService<ApplicationIdentityDbContext>();
 
-            await EnsureDatabaseAsync(dbContext, cancellationToken);
-            await RunMigrationAsync(dbContext, cancellationToken);
-            // await SeedDataAsync(dbContext, cancellationToken);
+            // Migrate ApiDbContext
+            await EnsureDatabaseAsync(apiDbContext, cancellationToken);
+            await RunMigrationAsync(apiDbContext, cancellationToken);
+
+            // Migrate ApplicationIdentityDbContext
+            await EnsureDatabaseAsync(identityDbContext, cancellationToken);
+            await RunMigrationAsync(identityDbContext, cancellationToken);
+
+            // await SeedDataAsync(apiDbContext, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -40,10 +47,14 @@ public class Worker(
         hostApplicationLifetime.StopApplication();
     }
 
+<<<<<<< Updated upstream
     private static async Task EnsureDatabaseAsync(
         ApiDbContext dbContext,
         CancellationToken cancellationToken
     )
+=======
+    private static async Task EnsureDatabaseAsync(DbContext dbContext, CancellationToken cancellationToken)
+>>>>>>> Stashed changes
     {
         var dbCreator = dbContext.GetService<IRelationalDatabaseCreator>();
 
@@ -59,10 +70,14 @@ public class Worker(
         });
     }
 
+<<<<<<< Updated upstream
     private static async Task RunMigrationAsync(
         ApiDbContext dbContext,
         CancellationToken cancellationToken
     )
+=======
+    private static async Task RunMigrationAsync(DbContext dbContext, CancellationToken cancellationToken)
+>>>>>>> Stashed changes
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>

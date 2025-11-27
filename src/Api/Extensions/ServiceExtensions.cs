@@ -88,10 +88,23 @@ namespace Api.Extensions
             Console.WriteLine("DB Connection String: " + connectionString);
 
             services
-                .AddDbContext<ApiDbContext>(options => options.UseSqlServer(connectionString
-                , options => options.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery)))
-                //.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery) // Add this line
-                .AddDbContext<ApplicationIdentityDbContext>(options => options.UseSqlServer(connectionString));
+                .AddDbContext<ApiDbContext>(options => options.UseSqlServer(connectionString,
+                    sqlOptions =>
+                    {
+                        sqlOptions.UseQuerySplittingBehavior(QuerySplittingBehavior.SplitQuery);
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorNumbersToAdd: null);
+                    }))
+                .AddDbContext<ApplicationIdentityDbContext>(options => options.UseSqlServer(connectionString,
+                    sqlOptions =>
+                    {
+                        sqlOptions.EnableRetryOnFailure(
+                            maxRetryCount: 10,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorNumbersToAdd: null);
+                    }));
         }
 
         // This method is used to configure rate limiting in the application.

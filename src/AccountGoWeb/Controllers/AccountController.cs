@@ -34,7 +34,20 @@ namespace AccountGoWeb.Controllers
                 var content = new StringContent(serialize);
                 content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
                 HttpResponseMessage responseSignIn = Post("account/signin", content);
-                Newtonsoft.Json.Linq.JObject resultSignIn = Newtonsoft.Json.Linq.JObject.Parse(responseSignIn.Content.ReadAsStringAsync().Result);
+
+                var responseContent = responseSignIn.Content.ReadAsStringAsync().Result;
+
+                // Log the response for debugging
+                Console.WriteLine($"API Response Status: {responseSignIn.StatusCode}");
+                Console.WriteLine($"API Response Content: {responseContent}");
+
+                if (string.IsNullOrWhiteSpace(responseContent))
+                {
+                    ModelState.AddModelError(string.Empty, "API returned empty response. Check API logs.");
+                    return View(model);
+                }
+
+                Newtonsoft.Json.Linq.JObject resultSignIn = Newtonsoft.Json.Linq.JObject.Parse(responseContent);
 
                 if (resultSignIn["result"] != null)
                 {
@@ -52,7 +65,7 @@ namespace AccountGoWeb.Controllers
                     claims.Add(new Claim(ClaimTypes.Surname, lastName));
                     claims.Add(new Claim(ClaimTypes.Name, firstName + " " + lastName));
 
-                    foreach(var role in user.Roles)
+                    foreach (var role in user.Roles)
                         claims.Add(new Claim(ClaimTypes.Role, role.Name!));
 
                     claims.Add(new Claim(ClaimTypes.UserData, Newtonsoft.Json.JsonConvert.SerializeObject(user)));
@@ -137,7 +150,7 @@ namespace AccountGoWeb.Controllers
                     }
                 }
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 ModelState.AddModelError(string.Empty, "Please check if your database is ready/published." + ": " + ex.Message);
                 return View(model);

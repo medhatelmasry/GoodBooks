@@ -26,6 +26,32 @@
         <a class="navbar-brand" href="/">
             GoodBooks
         </a>
+        <ul class="nav navbar-nav ml-auto">
+            @if (User.Identity != null && User.Identity.IsAuthenticated)
+            {
+                <li class="nav-item dropdown">
+                    <a class="nav-link" data-toggle="dropdown" href="#" role="button" aria-haspopup="true" aria-expanded="false">
+                        <i class="icon-user"></i> @User.Identity.Name
+                    </a>
+                    <div class="dropdown-menu dropdown-menu-right">
+                        <div class="dropdown-header text-center">
+                            <strong>Account</strong>
+                        </div>
+                        <a class="dropdown-item" href="~/account/signout">
+                            <i class="fa fa-lock"></i> Logout
+                        </a>
+                    </div>
+                </li>
+            }
+            else
+            {
+                <li class="nav-item">
+                    <a class="nav-link" href="~/account/signin">
+                        <i class="icon-user"></i> Login
+                    </a>
+                </li>
+            }
+        </ul>
     </header>
     <div class="app-body">
         <div class="sidebar">

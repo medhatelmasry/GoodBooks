@@ -24,9 +24,12 @@ builder.AddProject<Projects.AccountGoWeb>("mvc")
         .WithReference(apiService)
         .WaitFor(apiService);
 
-builder.AddProject<Projects.MigrationService>("migrations")
+var migrations = builder.AddProject<Projects.MigrationService>("migrations")
     .WithReference(sqlServer)
     .WaitFor(sqlServer);
+
+// Wait for migrations to complete before starting API
+apiService.WaitFor(migrations);
 
 builder.Build().Run();
 

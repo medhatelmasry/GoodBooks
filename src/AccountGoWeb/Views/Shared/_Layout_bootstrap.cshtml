@@ -308,7 +308,14 @@
                 </li>
 
 
-                <li><a href='#message'>Logout</a></li>
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <li><a href='~/account/signout'><i class="fa fa-sign-out"></i> Logout (@User.Identity.Name)</a></li>
+                }
+                else
+                {
+                    <li><a href='~/account/signin'><i class="fa fa-sign-in"></i> Login</a></li>
+                }
             </ul>
         </nav>
 

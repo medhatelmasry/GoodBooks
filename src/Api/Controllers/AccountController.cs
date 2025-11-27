@@ -29,7 +29,7 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("SignIn")]
-        public async System.Threading.Tasks.Task<IActionResult> SignIn([FromBody]dynamic loginViewModel)
+        public async System.Threading.Tasks.Task<IActionResult> SignIn([FromBody] dynamic loginViewModel)
         {
             if (loginViewModel == null)
             {
@@ -45,21 +45,23 @@ namespace Api.Controllers
             //{
             //    return await LockedOut(user);
             //}
-            
+
             try
             {
-                if(!await _authenticationService.ValidateUser(loginViewModel))
+                if (!await _authenticationService.ValidateUser(loginViewModel))
                 {
-                    return Unauthorized();
+                    return Unauthorized(new { result = false, message = "Invalid username or password" });
                 }
 
                 var tokenDto = await _authenticationService.CreateToken(populateExp: true);
 
-                return Ok(tokenDto);
+                return Ok(new { result = tokenDto });
             }
-            catch(System.Exception ex)
+            catch (System.Exception ex)
             {
+                System.Console.WriteLine($"❌ SignIn Exception: {ex.Message}");
                 System.Console.WriteLine(ex.StackTrace);
+                return StatusCode(500, new { result = false, message = ex.Message });
             }
 
 
@@ -81,7 +83,7 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("AddNewUser")]
-        public async System.Threading.Tasks.Task<IActionResult> AddNewUser([FromBody]dynamic registerViewModel)
+        public async System.Threading.Tasks.Task<IActionResult> AddNewUser([FromBody] dynamic registerViewModel)
         {
             try
             {
@@ -114,7 +116,7 @@ namespace Api.Controllers
                 }
                 return new BadRequestObjectResult(result);
             }
-            catch(System.Exception ex)
+            catch (System.Exception ex)
             {
                 var errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
                 return new BadRequestObjectResult(errors);
