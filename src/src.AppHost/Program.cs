@@ -13,23 +13,22 @@ var builder = DistributedApplication.CreateBuilder(args);
 var sqlServer = builder.AddSqlServer("gdb-sql-server")
                  .AddDatabase("gdb-db");
 
-// read environment variable for connection string
+// Create MigrationService first - it needs to run before the API
+var migrations = builder.AddProject<Projects.MigrationService>("migrations")
+    .WithReference(sqlServer)
+    .WaitFor(sqlServer);
+
+// API waits for both SQL Server AND migrations to complete
 var apiService = builder.AddProject<Projects.Api>("api")
         .WithReference(sqlServer)
         .WithHttpEndpoint(port: 8001)
-        .WaitFor(sqlServer);
+        .WaitFor(sqlServer)
+        .WaitFor(migrations);
 
 builder.AddProject<Projects.AccountGoWeb>("mvc")
         .WithHttpEndpoint(port: 8000)
         .WithReference(apiService)
         .WaitFor(apiService);
-
-var migrations = builder.AddProject<Projects.MigrationService>("migrations")
-    .WithReference(sqlServer)
-    .WaitFor(sqlServer);
-
-// Wait for migrations to complete before starting API
-apiService.WaitFor(migrations);
 
 builder.Build().Run();
 

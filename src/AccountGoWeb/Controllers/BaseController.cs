@@ -1,10 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AccountGoWeb.Controllers
 {
     public class BaseController : Controller
     {
         protected IConfiguration? _baseConfig;
+
+        protected string? GetAccessToken()
+        {
+            return User?.FindFirst("AccessToken")?.Value;
+        }
 
         protected async System.Threading.Tasks.Task<T> GetAsync<T>(string uri)
         {
@@ -14,6 +20,14 @@ namespace AccountGoWeb.Controllers
                 var baseUri = _baseConfig!["ApiUrl"];
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
                 var response = await client.GetAsync(baseUri + uri);
                 if (response.IsSuccessStatusCode)
                 {
@@ -31,6 +45,14 @@ namespace AccountGoWeb.Controllers
                 var baseUri = _baseConfig!["ApiUrl"];
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
                 var response = client.GetAsync(baseUri + uri);
                 return response.Result;
             }
@@ -44,6 +66,14 @@ namespace AccountGoWeb.Controllers
                 var baseUri = _baseConfig!["ApiUrl"];
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
                 client.DefaultRequestHeaders.Add("UserName", GetCurrentUserName());
 
                 var response = await client.PostAsync(baseUri + uri, data);
@@ -65,6 +95,14 @@ namespace AccountGoWeb.Controllers
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
                 client.DefaultRequestHeaders.Add("UserName", GetCurrentUserName());
 
                 var response = client.PostAsync(baseUri + uri, data);

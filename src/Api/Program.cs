@@ -96,9 +96,9 @@ using (var scope = app.Services.CreateScope())
     var identityDbContext = services.GetRequiredService<ApplicationIdentityDbContext>();
     var apiDbContext = services.GetRequiredService<ApiDbContext>();
 
-    // Wait up to 60 seconds for migrations to complete
+    // Wait up to 40 seconds for migrations to complete
     int attempts = 0;
-    while (attempts < 12)
+    while (attempts < 10)  // 10 attempts × 4 seconds = 40 seconds max
     {
         try
         {
@@ -116,14 +116,14 @@ using (var scope = app.Services.CreateScope())
         }
         catch (Exception ex)
         {
-            logger.LogWarning($"Attempt {attempts + 1}/12: Waiting for migrations... ({ex.Message})");
+            logger.LogWarning($"Attempt {attempts + 1}/10: Waiting for migrations... ({ex.Message})");
         }
 
-        await Task.Delay(TimeSpan.FromSeconds(5));
+        await Task.Delay(TimeSpan.FromSeconds(4));  // Check every 4 seconds
         attempts++;
     }
 
-    if (attempts >= 12)
+    if (attempts >= 10)
     {
         logger.LogError("❌ Migrations did not complete in time. Database seeding skipped.");
     }

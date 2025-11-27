@@ -1,5 +1,7 @@
+using Api.Constants;
 using Api.Data;
 using Api.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Services.Administration;
@@ -29,7 +31,8 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("SignIn")]
-        public async System.Threading.Tasks.Task<IActionResult> SignIn([FromBody] dynamic loginViewModel)
+        [AllowAnonymous]
+        public async System.Threading.Tasks.Task<IActionResult> SignIn([FromBody]dynamic loginViewModel)
         {
             if (loginViewModel == null)
             {
@@ -83,7 +86,8 @@ namespace Api.Controllers
 
         [HttpPost]
         [Route("AddNewUser")]
-        public async System.Threading.Tasks.Task<IActionResult> AddNewUser([FromBody] dynamic registerViewModel)
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
+        public async System.Threading.Tasks.Task<IActionResult> AddNewUser([FromBody]dynamic registerViewModel)
         {
             try
             {

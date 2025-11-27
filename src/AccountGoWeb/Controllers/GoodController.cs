@@ -1,10 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace AccountGoWeb.Controllers
 {
     public class GoodController : Controller
     {
         protected IConfiguration? _configuration;
+
+        protected string? GetAccessToken()
+        {
+            return User?.FindFirst("AccessToken")?.Value;
+        }
 
         protected HttpResponseMessage Get(string uri)
         {
@@ -14,6 +20,14 @@ namespace AccountGoWeb.Controllers
                 string? baseUri = _configuration!["ApiUrl"];
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
                 var response = client.GetAsync(baseUri + uri);
                 return response.Result;
             }
@@ -28,14 +42,20 @@ namespace AccountGoWeb.Controllers
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
-                //client.DefaultRequestHeaders.Add("UserName", GetCurrentUserName());
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
 
                 var response = client.PostAsync(baseUri + uri, data);
                 return response.Result;
             }
         }
 
-        protected async System.Threading.Tasks.Task<T> GetAsync<T>(string uri)
+        protected async System.Threading.Tasks.Task<T> GetAsync<T>(string uri, string? accessToken = null)
         {
             string responseJson = string.Empty;
             using (var client = new HttpClient())
@@ -43,6 +63,15 @@ namespace AccountGoWeb.Controllers
                 string? baseUri = _configuration!["ApiUrl"];
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
+                
+                // Use provided token or get from claims
+                var token = accessToken ?? GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
+                
                 var response = await client.GetAsync(baseUri + uri);
                 if (response.IsSuccessStatusCode)
                 {
@@ -60,7 +89,13 @@ namespace AccountGoWeb.Controllers
                 string? baseUri = _configuration!["ApiUrl"];
                 client.BaseAddress = new System.Uri(baseUri!);
                 client.DefaultRequestHeaders.Accept.Clear();
-                //client.DefaultRequestHeaders.Add("UserName", GetCurrentUserName());
+                
+                var token = GetAccessToken();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    client.DefaultRequestHeaders.Authorization = 
+                        new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+                }
 
                 var response = await client.PostAsync(baseUri + uri, data);
                 if (response.IsSuccessStatusCode)

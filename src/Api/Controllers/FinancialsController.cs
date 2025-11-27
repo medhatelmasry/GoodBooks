@@ -1,4 +1,5 @@
-﻿using Dto.Financial;
+﻿using Api.Constants;
+using Dto.Financial;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Administration;
@@ -10,7 +11,7 @@ using System.Linq;
 namespace Api.Controllers
 {
     [Route("api/[controller]")]
-    //[Authorize]
+    [Authorize(Roles = AppRoles.AnyUser)]
     public class FinancialsController : BaseController
     {
         private readonly IAdministrationService _adminService;
@@ -467,6 +468,7 @@ namespace Api.Controllers
 
         [HttpDelete]
         [Route("DeleteAccount/{accountCode}")]
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
         public async Task<IActionResult> DeleteAccount(string accountCode)
         {
             var result = await _accountService.DeleteAccountAsync(accountCode);

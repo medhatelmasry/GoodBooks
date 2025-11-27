@@ -17,7 +17,10 @@ Console.WriteLine($"[ASPNETCORE SERVER] API URL {builder.Configuration["ApiUrl"]
 
 builder.Services.AddHttpClient();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
-    .AddCookie(o => o.LoginPath = new PathString("/account/signin"));
+    .AddCookie(o => {
+        o.LoginPath = new PathString("/account/signin");
+        o.AccessDeniedPath = new PathString("/account/accessdenied");
+    });
 
 builder.Services
     .AddRazorComponents()

@@ -47,14 +47,7 @@ public class Worker(
         hostApplicationLifetime.StopApplication();
     }
 
-<<<<<<< Updated upstream
-    private static async Task EnsureDatabaseAsync(
-        ApiDbContext dbContext,
-        CancellationToken cancellationToken
-    )
-=======
     private static async Task EnsureDatabaseAsync(DbContext dbContext, CancellationToken cancellationToken)
->>>>>>> Stashed changes
     {
         var dbCreator = dbContext.GetService<IRelationalDatabaseCreator>();
 
@@ -70,14 +63,7 @@ public class Worker(
         });
     }
 
-<<<<<<< Updated upstream
-    private static async Task RunMigrationAsync(
-        ApiDbContext dbContext,
-        CancellationToken cancellationToken
-    )
-=======
     private static async Task RunMigrationAsync(DbContext dbContext, CancellationToken cancellationToken)
->>>>>>> Stashed changes
     {
         var strategy = dbContext.Database.CreateExecutionStrategy();
         await strategy.ExecuteAsync(async () =>

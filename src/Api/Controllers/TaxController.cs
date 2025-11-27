@@ -1,7 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Api.ActionFilters;
+using Api.Constants;
 using Dto.TaxSystem;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Administration;
 using Services.Financial;
@@ -10,6 +12,7 @@ using Services.TaxSystem;
 namespace Api.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = AppRoles.AnyUser)]
     public class TaxController : BaseController
     {
         private readonly ITaxService _taxService;
@@ -205,6 +208,7 @@ namespace Api.Controllers
         }
 
         [HttpPost("addnewtax")]
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> AddNewTax([FromBody] TaxForCreation taxForCreationDto)
         {
@@ -221,6 +225,7 @@ namespace Api.Controllers
         }
 
         [HttpPut("edittax")]
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public async Task<IActionResult> EditTax([FromBody] TaxForUpdate taxForUpdateDto)
         {
@@ -237,6 +242,7 @@ namespace Api.Controllers
         }
 
         [HttpDelete("tax/{id:int}")]
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
         public async Task<IActionResult> DeleteTax(int id)
         {
             var result = await _adminService.DeleteTaxAsync(id);
@@ -250,6 +256,7 @@ namespace Api.Controllers
         }
 
         [HttpDelete("taxgroup/{id:int}")]
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
         public async Task<IActionResult> DeleteTaxGroup(int id)
         {
             var result = await _adminService.DeleteTaxGroupAsync(id);
@@ -263,6 +270,7 @@ namespace Api.Controllers
         }
 
         [HttpDelete("itemtaxgroup/{id:int}")]
+        [Authorize(Roles = AppRoles.SystemAdministrator)]
         public async Task<IActionResult> DeleteItemTaxGroup(int id)
         {
             var result = await _adminService.DeleteItemTaxGroupAsync(id);

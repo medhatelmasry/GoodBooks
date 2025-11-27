@@ -1,5 +1,7 @@
+using Api.Constants;
 using Dto.Administration;
 using Dto.Security;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Services.Administration;
 using Services.Financial;
@@ -17,6 +19,7 @@ using System.Text;
 namespace Api.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = AppRoles.SystemAdministrator)]
     public class AdministrationController : BaseController
     {
         private readonly IAdministrationService _adminService;
@@ -201,6 +204,7 @@ namespace Api.Controllers
 
         [HttpGet]
         [Route("GetUser")]
+        [Authorize(Roles = AppRoles.AnyUser)] // Allow any authenticated user to get their own user info
         public IActionResult GetUser(string username)
         {
             var user = _securityService.GetUser(username);

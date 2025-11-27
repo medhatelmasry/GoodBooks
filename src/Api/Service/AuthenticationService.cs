@@ -40,7 +40,7 @@ namespace Api.Service
         public async Task<Token> CreateToken(bool populateExp)
         {
             var signingCredentials = GetSigningCredentials();
-            var claims = GetClaims();
+            var claims = await GetClaims();
             var tokenOptions = GenerateTokenOptions(signingCredentials, claims);
 
             var refreshToken = GenerateRefreshToken();
@@ -80,13 +80,20 @@ namespace Api.Service
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
 
-        private List<Claim> GetClaims()
+        private async Task<List<Claim>> GetClaims()
         {
             var claims = new List<Claim>
             {
                 new Claim(ClaimTypes.Name, _user!.UserName!),
                 new Claim(ClaimTypes.Email, _user!.Email!)
             };
+
+            // Add role claims
+            var roles = await _userManager.GetRolesAsync(_user);
+            foreach (var role in roles)
+            {
+                claims.Add(new Claim(ClaimTypes.Role, role));
+            }
 
             return claims;
         }

@@ -51,12 +51,28 @@ namespace AccountGoWeb.Controllers
 
                 if (resultSignIn["result"] != null)
                 {
-                    var user = await GetAsync<Dto.Security.User>("administration/getuser?username=" + model.Email);
+                    // Extract the JWT token from the signin response
+                    string? accessToken = resultSignIn["result"]!["accessToken"]?.ToString();
+                    
+                    if (string.IsNullOrEmpty(accessToken))
+                    {
+                        ModelState.AddModelError(string.Empty, "Failed to obtain access token.");
+                        return View(model);
+                    }
+
+                    var user = await GetAsync<Dto.Security.User>("administration/getuser?username=" + model.Email, accessToken);
+
+                    if (user == null || string.IsNullOrEmpty(user.Email))
+                    {
+                        ModelState.AddModelError(string.Empty, "User not found or email is missing.");
+                        return View(model);
+                    }
 
                     var claims = new List<Claim>();
                     claims.Add(new Claim(ClaimTypes.IsPersistent, model.RememberMe.ToString()));
-                    claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Email!));
-                    claims.Add(new Claim(ClaimTypes.Email, user.Email!));
+                    claims.Add(new Claim(ClaimTypes.NameIdentifier, user.Email));
+                    claims.Add(new Claim(ClaimTypes.Email, user.Email));
+                    claims.Add(new Claim("AccessToken", accessToken)); // Store token for future API calls
 
                     string firstName = user.FirstName != null ? user.FirstName : "";
                     string lastName = user.LastName != null ? user.LastName : "";
@@ -107,6 +123,12 @@ namespace AccountGoWeb.Controllers
 
             return View();
         }
+        
+        public IActionResult AccessDenied()
+        {
+            return View();
+        }
+        
         public IActionResult Unauthorize()
         {
             return View();

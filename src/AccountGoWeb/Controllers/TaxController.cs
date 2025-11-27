@@ -26,24 +26,24 @@ namespace AccountGoWeb.Controllers
         {
             ViewBag.PageContentHeader = "Tax";
 
-            using (var client = new System.Net.Http.HttpClient())
+            try
             {
-                var baseUri = _baseConfig!["ApiUrl"];
-                client.BaseAddress = new System.Uri(baseUri!);
-                client.DefaultRequestHeaders.Accept.Clear();
-                var response = await client.GetAsync(baseUri + "tax/taxes");
-                if (response.IsSuccessStatusCode)
+                var taxSystemDto = await GetAsync<Dto.TaxSystem.TaxSystemDto>("tax/taxes");
+                
+                if (taxSystemDto != null)
                 {
-                    var responseJson = await response.Content.ReadAsStringAsync();
-
-                    var taxSystemDto = Newtonsoft.Json.JsonConvert.DeserializeObject<Dto.TaxSystem.TaxSystemDto>(responseJson);
                     var taxSystemViewModel = _mapper.Map<Models.TaxSystem.TaxSystemViewModel>(taxSystemDto);
-                  
                     return View(taxSystemViewModel);
                 }
+                
+                // Return empty model if API returns null
+                return View(new Models.TaxSystem.TaxSystemViewModel());
             }
-
-            return View();
+            catch (Exception ex)
+            {
+                System.Console.WriteLine($"Error loading taxes: {ex.Message}");
+                return View(new Models.TaxSystem.TaxSystemViewModel());
+            }
         }
 
         public IActionResult AddNewTax()
