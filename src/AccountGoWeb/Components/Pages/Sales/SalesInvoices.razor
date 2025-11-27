@@ -85,7 +85,7 @@
                             @foreach (var invoice in salesInvoices)
                             {
                                 <tr @onclick="() => SelectInvoice(invoice)"
-                                    class="@(selectedInvoice?.Id == invoice.Id ? "table-active" : "")" style="cursor: pointer;">
+                                    style="cursor: pointer; @(selectedInvoice?.Id == invoice.Id ? "background-color: #d1ecf1; border-left: 3px solid #0c5460;" : "")">
                                     <td>
                                         <a href="/sales/AddSalesInvoice/@invoice.Id">
                                             @invoice.No
