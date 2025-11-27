@@ -193,30 +193,30 @@
                             </li>
                         </ul>
                     </li>
-                    <li class="nav-item nav-dropdown open">
-                        <a class="nav-link nav-dropdown-toggle" href="#">
-                            <i class="nav-icon fa fa-group"></i> Organization Settings
-                        </a>
-                        <ul class="nav-dropdown-items">
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Administration" asp-action="Company">
-                                    Company
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link" asp-area="" asp-controller="Administration" asp-action="Settings">
-                                    Settings
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="nav-item nav-dropdown open">
-                        <a class="nav-link nav-dropdown-toggle" href="#">
-                            <i class="nav-icon fa fa-desktop"></i> System Administration
-                        </a>
-                        <ul class="nav-dropdown-items">
-                            @if (User.IsInRole("SystemAdministrators"))
-                            {
+                    @if (User.IsInRole("SystemAdministrators"))
+                    {
+                        <li class="nav-item nav-dropdown open">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                <i class="nav-icon fa fa-group"></i> Organization Settings
+                            </a>
+                            <ul class="nav-dropdown-items">
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Administration" asp-action="Company">
+                                        Company
+                                    </a>
+                                </li>
+                                <li class="nav-item">
+                                    <a class="nav-link" asp-area="" asp-controller="Administration" asp-action="Settings">
+                                        Settings
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="nav-item nav-dropdown open">
+                            <a class="nav-link nav-dropdown-toggle" href="#">
+                                <i class="nav-icon fa fa-desktop"></i> System Administration
+                            </a>
+                            <ul class="nav-dropdown-items">
                                 <li>
                                     <a href="#">
                                         Security
@@ -233,9 +233,9 @@
                                 <li>
                                     <a href="~/administration/auditlogs">Audit Logs</a>
                                 </li>
-                            }
-                        </ul>
-                    </li>
+                            </ul>
+                        </li>
+                    }
                 </ul>
             </nav>
             <button class="sidebar-minimizer brand-minimizer" type="button"></button>

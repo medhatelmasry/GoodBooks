@@ -124,44 +124,72 @@ namespace Api.Data.Seed
             {
                 Console.WriteLine($"Checking if user '{adminEmail}' exists...");
                 var existingUser = await userManager.FindByEmailAsync(adminEmail);
+                
+                ApplicationUser adminUser;
+                
                 if (existingUser != null)
                 {
-                    Console.WriteLine($"✅ Admin user '{adminEmail}' already exists in Identity, skipping creation.");
-                    return;
+                    Console.WriteLine($"✅ Admin user '{adminEmail}' already exists in Identity.");
+                    adminUser = existingUser;
                 }
-
-                Console.WriteLine($"Creating default admin user '{adminEmail}' in Identity...");
-                var adminUser = new ApplicationUser
+                else
                 {
-                    UserName = adminEmail,
-                    Email = adminEmail,
-                    EmailConfirmed = true
-                };
-
-                var result = await userManager.CreateAsync(adminUser, adminPassword);
-
-                if (result.Succeeded)
-                {
-                    Console.WriteLine($"✅ Default admin user '{adminEmail}' created successfully in Identity.");
-
-                    // Add to SystemAdministrators role
-                    var roleResult = await userManager.AddToRoleAsync(adminUser, "SystemAdministrators");
-                    if (roleResult.Succeeded)
+                    Console.WriteLine($"Creating default admin user '{adminEmail}' in Identity...");
+                    adminUser = new ApplicationUser
                     {
-                        Console.WriteLine($"✅ User '{adminEmail}' added to SystemAdministrators role.");
+                        UserName = adminEmail,
+                        Email = adminEmail,
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(adminUser, adminPassword);
+
+                    if (result.Succeeded)
+                    {
+                        Console.WriteLine($"✅ Default admin user '{adminEmail}' created successfully in Identity.");
                     }
                     else
                     {
-                        Console.WriteLine($"❌ Failed to add admin user to SystemAdministrators role:");
+                        Console.WriteLine($"❌ Failed to create default admin user:");
+                        foreach (var error in result.Errors)
+                        {
+                            Console.WriteLine($"   - {error.Code}: {error.Description}");
+                        }
+                        return;
+                    }
+                }
+
+                // Ensure user is in SystemAdministrators role in Identity
+                var userRolesInIdentity = await userManager.GetRolesAsync(adminUser);
+                if (!userRolesInIdentity.Contains("SystemAdministrators"))
+                {
+                    var roleResult = await userManager.AddToRoleAsync(adminUser, "SystemAdministrators");
+                    if (roleResult.Succeeded)
+                    {
+                        Console.WriteLine($"✅ User '{adminEmail}' added to SystemAdministrators role in Identity.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"❌ Failed to add admin user to SystemAdministrators role in Identity:");
                         foreach (var error in roleResult.Errors)
                         {
                             Console.WriteLine($"   - {error.Code}: {error.Description}");
                         }
                     }
+                }
+                else
+                {
+                    Console.WriteLine($"✅ User '{adminEmail}' already in SystemAdministrators role in Identity.");
+                }
 
-                    // Also create in application domain if not exists
-                    try
+                // Ensure user exists and has role in application domain
+                try
+                {
+                    var savedUser = securityService.GetUser(adminEmail);
+                    
+                    if (savedUser == null)
                     {
+                        Console.WriteLine($"Creating user '{adminEmail}' in application domain...");
                         var domainUser = new Core.Domain.Security.User
                         {
                             EmailAddress = adminEmail,
@@ -171,43 +199,39 @@ namespace Api.Data.Seed
                         };
 
                         adminService.SaveUser(domainUser);
-                        Console.WriteLine($"✅ Default admin user created in application domain.");
+                        Console.WriteLine($"✅ User '{adminEmail}' created in application domain.");
                         
-                        // Assign to SystemAdministrators role in application domain
-                        var savedUser = securityService.GetUser(adminEmail);
-                        var adminRole = securityService.GetAllSecurityRole().FirstOrDefault(r => r.Name == "SystemAdministrators");
-                        
-                        if (savedUser != null && adminRole != null)
+                        savedUser = securityService.GetUser(adminEmail);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"✅ User '{adminEmail}' already exists in application domain.");
+                    }
+                    
+                    // Ensure user is in SystemAdministrators role in application domain
+                    var adminRole = securityService.GetAllSecurityRole().FirstOrDefault(r => r.Name == "SystemAdministrators");
+                    
+                    if (savedUser != null && adminRole != null)
+                    {
+                        var userRoles = securityService.GetRolesForUser(adminEmail);
+                        if (!userRoles.Any(ur => ur.SecurityRoleId == adminRole.Id))
                         {
-                            // Check if user is already in role
-                            var userRoles = securityService.GetRolesForUser(adminEmail);
-                            if (!userRoles.Any(ur => ur.SecurityRoleId == adminRole.Id))
-                            {
-                                securityService.AddUserInRole(savedUser.Id, adminRole.Id);
-                                Console.WriteLine($"✅ User '{adminEmail}' added to SystemAdministrators role in application domain.");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"✅ User '{adminEmail}' already in SystemAdministrators role in application domain.");
-                            }
+                            securityService.AddUserInRole(savedUser.Id, adminRole.Id);
+                            Console.WriteLine($"✅ User '{adminEmail}' added to SystemAdministrators role in application domain.");
                         }
                         else
                         {
-                            Console.WriteLine($"⚠️  Could not assign role: User or role not found.");
+                            Console.WriteLine($"✅ User '{adminEmail}' already in SystemAdministrators role in application domain.");
                         }
                     }
-                    catch (Exception domainEx)
+                    else
                     {
-                        Console.WriteLine($"⚠️  Domain user creation/role assignment failed: {domainEx.Message}");
+                        Console.WriteLine($"⚠️  Could not assign role: User or role not found.");
                     }
                 }
-                else
+                catch (Exception domainEx)
                 {
-                    Console.WriteLine($"❌ Failed to create default admin user:");
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine($"   - {error.Code}: {error.Description}");
-                    }
+                    Console.WriteLine($"⚠️  Domain user creation/role assignment failed: {domainEx.Message}");
                 }
             }
             catch (Exception ex)
@@ -226,44 +250,72 @@ namespace Api.Data.Seed
             {
                 Console.WriteLine($"Checking if user '{userEmail}' exists...");
                 var existingUser = await userManager.FindByEmailAsync(userEmail);
+                
+                ApplicationUser generalUser;
+                
                 if (existingUser != null)
                 {
-                    Console.WriteLine($"✅ General user '{userEmail}' already exists in Identity, skipping creation.");
-                    return;
+                    Console.WriteLine($"✅ General user '{userEmail}' already exists in Identity.");
+                    generalUser = existingUser;
                 }
-
-                Console.WriteLine($"Creating default general user '{userEmail}' in Identity...");
-                var generalUser = new ApplicationUser
+                else
                 {
-                    UserName = userEmail,
-                    Email = userEmail,
-                    EmailConfirmed = true
-                };
-
-                var result = await userManager.CreateAsync(generalUser, userPassword);
-
-                if (result.Succeeded)
-                {
-                    Console.WriteLine($"✅ Default general user '{userEmail}' created successfully in Identity.");
-
-                    // Add to GeneralUsers role
-                    var roleResult = await userManager.AddToRoleAsync(generalUser, "GeneralUsers");
-                    if (roleResult.Succeeded)
+                    Console.WriteLine($"Creating default general user '{userEmail}' in Identity...");
+                    generalUser = new ApplicationUser
                     {
-                        Console.WriteLine($"✅ User '{userEmail}' added to GeneralUsers role.");
+                        UserName = userEmail,
+                        Email = userEmail,
+                        EmailConfirmed = true
+                    };
+
+                    var result = await userManager.CreateAsync(generalUser, userPassword);
+
+                    if (result.Succeeded)
+                    {
+                        Console.WriteLine($"✅ Default general user '{userEmail}' created successfully in Identity.");
                     }
                     else
                     {
-                        Console.WriteLine($"❌ Failed to add user to GeneralUsers role:");
+                        Console.WriteLine($"❌ Failed to create default general user:");
+                        foreach (var error in result.Errors)
+                        {
+                            Console.WriteLine($"   - {error.Code}: {error.Description}");
+                        }
+                        return;
+                    }
+                }
+
+                // Ensure user is in GeneralUsers role in Identity
+                var userRolesInIdentity = await userManager.GetRolesAsync(generalUser);
+                if (!userRolesInIdentity.Contains("GeneralUsers"))
+                {
+                    var roleResult = await userManager.AddToRoleAsync(generalUser, "GeneralUsers");
+                    if (roleResult.Succeeded)
+                    {
+                        Console.WriteLine($"✅ User '{userEmail}' added to GeneralUsers role in Identity.");
+                    }
+                    else
+                    {
+                        Console.WriteLine($"❌ Failed to add user to GeneralUsers role in Identity:");
                         foreach (var error in roleResult.Errors)
                         {
                             Console.WriteLine($"   - {error.Code}: {error.Description}");
                         }
                     }
+                }
+                else
+                {
+                    Console.WriteLine($"✅ User '{userEmail}' already in GeneralUsers role in Identity.");
+                }
 
-                    // Also create in application domain if not exists
-                    try
+                // Ensure user exists and has role in application domain
+                try
+                {
+                    var savedUser = securityService.GetUser(userEmail);
+                    
+                    if (savedUser == null)
                     {
+                        Console.WriteLine($"Creating user '{userEmail}' in application domain...");
                         var domainUser = new Core.Domain.Security.User
                         {
                             EmailAddress = userEmail,
@@ -273,43 +325,39 @@ namespace Api.Data.Seed
                         };
 
                         adminService.SaveUser(domainUser);
-                        Console.WriteLine($"✅ Default general user created in application domain.");
+                        Console.WriteLine($"✅ User '{userEmail}' created in application domain.");
                         
-                        // Assign to GeneralUsers role in application domain
-                        var savedUser = securityService.GetUser(userEmail);
-                        var generalRole = securityService.GetAllSecurityRole().FirstOrDefault(r => r.Name == "GeneralUsers");
-                        
-                        if (savedUser != null && generalRole != null)
+                        savedUser = securityService.GetUser(userEmail);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"✅ User '{userEmail}' already exists in application domain.");
+                    }
+                    
+                    // Ensure user is in GeneralUsers role in application domain
+                    var generalRole = securityService.GetAllSecurityRole().FirstOrDefault(r => r.Name == "GeneralUsers");
+                    
+                    if (savedUser != null && generalRole != null)
+                    {
+                        var userRoles = securityService.GetRolesForUser(userEmail);
+                        if (!userRoles.Any(ur => ur.SecurityRoleId == generalRole.Id))
                         {
-                            // Check if user is already in role
-                            var userRoles = securityService.GetRolesForUser(userEmail);
-                            if (!userRoles.Any(ur => ur.SecurityRoleId == generalRole.Id))
-                            {
-                                securityService.AddUserInRole(savedUser.Id, generalRole.Id);
-                                Console.WriteLine($"✅ User '{userEmail}' added to GeneralUsers role in application domain.");
-                            }
-                            else
-                            {
-                                Console.WriteLine($"✅ User '{userEmail}' already in GeneralUsers role in application domain.");
-                            }
+                            securityService.AddUserInRole(savedUser.Id, generalRole.Id);
+                            Console.WriteLine($"✅ User '{userEmail}' added to GeneralUsers role in application domain.");
                         }
                         else
                         {
-                            Console.WriteLine($"⚠️  Could not assign role: User or role not found.");
+                            Console.WriteLine($"✅ User '{userEmail}' already in GeneralUsers role in application domain.");
                         }
                     }
-                    catch (Exception domainEx)
+                    else
                     {
-                        Console.WriteLine($"⚠️  Domain user creation/role assignment failed: {domainEx.Message}");
+                        Console.WriteLine($"⚠️  Could not assign role: User or role not found.");
                     }
                 }
-                else
+                catch (Exception domainEx)
                 {
-                    Console.WriteLine($"❌ Failed to create default general user:");
-                    foreach (var error in result.Errors)
-                    {
-                        Console.WriteLine($"   - {error.Code}: {error.Description}");
-                    }
+                    Console.WriteLine($"⚠️  Domain user creation/role assignment failed: {domainEx.Message}");
                 }
             }
             catch (Exception ex)

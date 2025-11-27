@@ -26,12 +26,15 @@
     <div class="tab-content">
 
         <div class="tab-pane" id="tab_1">
-            <div>
-                <a href="~/Tax/AddNewTax" class="btn btn-primary" style="margin-bottom: 2px;">
-                    <i class="fa fa-plus"></i>
-                    New Tax
-                </a>
-            </div>
+            @if (User.IsInRole("SystemAdministrators"))
+            {
+                <div>
+                    <a href="~/Tax/AddNewTax" class="btn btn-primary" style="margin-bottom: 2px;">
+                        <i class="fa fa-plus"></i>
+                        New Tax
+                    </a>
+                </div>
+            }
             <div id="taxes" class="box-body table-responsive">
                 <table class="table table-hover">
                     <thead>
@@ -39,7 +42,10 @@
                             <th>Code</th>
                             <th>Name</th>
                             <th>Rate (%)</th>
-                            <th>Action</th>
+                            @if (User.IsInRole("SystemAdministrators"))
+                            {
+                                <th>Action</th>
+                            }
                         </tr>
                     </thead>
                     <tbody>
@@ -49,10 +55,13 @@
                                 <td>@tax.TaxCode</td>
                                 <td>@tax.TaxName</td>
                                 <td>@tax.Rate</td>
-                                <td>
-                                    <button class="taxId btn btn-sm btn-info btn-flat" onclick="updateTax(@tax.Id)">Edit</button>
-                                    <button id="@tax.Id" class="taxId btn btn-sm btn-danger btn-flat" data-bs-toggle="modal" data-bs-target="#deleteTax">Delete</button>
-                                </td>
+                                @if (User.IsInRole("SystemAdministrators"))
+                                {
+                                    <td>
+                                        <button class="taxId btn btn-sm btn-info btn-flat" onclick="updateTax(@tax.Id)">Edit</button>
+                                        <button id="@tax.Id" class="taxId btn btn-sm btn-danger btn-flat" data-bs-toggle="modal" data-bs-target="#deleteTax">Delete</button>
+                                    </td>
+                                }
                             </tr>
                         }
                     </tbody>
@@ -68,7 +77,10 @@
                             <th>Description</th>
                             <th>Tax Applied To Shipping</th>
                             <th>Active</th>
-                            <th>Action</th>
+                            @if (User.IsInRole("SystemAdministrators"))
+                            {
+                                <th>Action</th>
+                            }
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: model.TaxGroups">
@@ -82,9 +94,12 @@
                             <td>
                                 <input data-bind="checked:IsActive" type="checkbox" />
                             </td>
-                            <td>
-                                <button class="btn btn-sm btn-danger btn-flat" data-bind="click: $root.clickTaxGroup" data-bs-toggle="modal" data-bs-target="#deleteTaxGroup">Delete</button>
-                            </td>
+                            @if (User.IsInRole("SystemAdministrators"))
+                            {
+                                <td>
+                                    <button class="btn btn-sm btn-danger btn-flat" data-bind="click: $root.clickTaxGroup" data-bs-toggle="modal" data-bs-target="#deleteTaxGroup">Delete</button>
+                                </td>
+                            }
                         </tr>
                     </tbody>
                 </table>
@@ -119,7 +134,10 @@
                         <tr>
                             <th>Name</th>
                             <th>Fully Exempt</th>
-                            <th>Action</th>
+                            @if (User.IsInRole("SystemAdministrators"))
+                            {
+                                <th>Action</th>
+                            }
                         </tr>
                     </thead>
                     <tbody data-bind="foreach: model.ItemTaxGroups">
@@ -130,9 +148,12 @@
                             <td>
                                 <input data-bind="checked:IsFullyExempt" type="checkbox" />
                             </td>
-                            <td>
-                                <button class="btn btn-sm btn-danger btn-flat" data-bind="click: $root.clickItemTaxGroup" data-bs-toggle="modal" data-bs-target="#deleteItemTaxGroup">Delete</button>
-                            </td>
+                            @if (User.IsInRole("SystemAdministrators"))
+                            {
+                                <td>
+                                    <button class="btn btn-sm btn-danger btn-flat" data-bind="click: $root.clickItemTaxGroup" data-bs-toggle="modal" data-bs-target="#deleteItemTaxGroup">Delete</button>
+                                </td>
+                            }
                         </tr>
                     </tbody>
                 </table>

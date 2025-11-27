@@ -204,6 +204,7 @@ namespace Api.Controllers
 
         [HttpGet]
         [Route("GetUser")]
+        [AllowAnonymous] // Bypass class-level authorization
         [Authorize(Roles = AppRoles.AnyUser)] // Allow any authenticated user to get their own user info
         public IActionResult GetUser(string username)
         {
