@@ -1,0 +1,142 @@
+﻿@using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Authorization
+@implements IDisposable
+
+@inject NavigationManager NavigationManager
+
+<!-- TOP BRAND -->
+<div class="top-row ps-3 navbar navbar-dark">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">GoodBooks</a>
+    </div>
+</div>
+
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
+
+<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
+    <nav class="flex-column">
+
+        <!-- 1. Dashboard -->
+        <div class="nav-item px-3">
+            <a class="nav-link" href="/Dashboard/MonthlySales">
+                <i class="nav-icon fa fa-dashboard"></i> Dashboard
+            </a>
+        </div>
+
+        <!-- 2. Accounts Receivable -->
+        <div class="nav-item px-3">
+            <div class="nav-link nav-dropdown-toggle">
+                <i class="nav-icon fa fa-industry"></i> Accounts Receivable
+            </div>
+            <div class="nav-dropdown-items">
+                <a class="nav-link" href="/Quotations/Quotations">Sales Quotations</a>
+                <a class="nav-link" href="/Sales/SalesOrders">Sales Orders</a>
+                <a class="nav-link" href="/Sales/SalesReceipts">Sales Receipts</a>
+                <a class="nav-link" href="/Sales/SalesInvoices">Sales Invoices</a>
+                <a class="nav-link" href="/Donations/DonationInvoices">Donation Invoices</a>
+                <a class="nav-link" href="/Sales/Customers">Customers</a>
+            </div>
+        </div>
+
+        <!-- 3. Accounts Payable -->
+        <div class="nav-item px-3">
+            <div class="nav-link nav-dropdown-toggle">
+                <i class="nav-icon fa fa-link"></i> Accounts Payable
+            </div>
+            <div class="nav-dropdown-items">
+                <a class="nav-link" href="/Purchasing/PurchaseOrders">Purchase Orders</a>
+                <a class="nav-link" href="/Purchasing/PurchaseInvoices">Purchase Invoices</a>
+                <a class="nav-link" href="/Purchasing/Vendors">Vendors</a>
+            </div>
+        </div>
+
+        <!-- 4. Inventory Control -->
+        <div class="nav-item px-3">
+            <div class="nav-link nav-dropdown-toggle">
+                <i class="nav-icon fa fa-wrench"></i> Inventory Control
+            </div>
+            <div class="nav-dropdown-items">
+                <a class="nav-link" href="/Inventory/Index">Items</a>
+                <a class="nav-link" href="/Inventory/ICJ">Inventory Control Journal</a>
+            </div>
+        </div>
+
+        <!-- 5. Financials -->
+        <div class="nav-item px-3">
+            <div class="nav-link nav-dropdown-toggle">
+                <i class="nav-icon fa fa-bank"></i> Financials
+            </div>
+            <div class="nav-dropdown-items">
+                <a class="nav-link" href="/Financials/JournalEntries">Journal Entries</a>
+                <a class="nav-link" href="/Financials/GeneralLedger">General Ledger</a>
+                <a class="nav-link" href="/Tax/Taxes">Taxes</a>
+                <a class="nav-link" href="/Financials/Accounts">Chart of Accounts</a>
+                <a class="nav-link" href="/Financials/Banks">Banks</a>
+            </div>
+        </div>
+
+        <!-- 6. Reports -->
+        <div class="nav-item px-3">
+            <div class="nav-link nav-dropdown-toggle">
+                <i class="nav-icon fa fa-line-chart"></i> Reports
+            </div>
+            <div class="nav-dropdown-items">
+                <a class="nav-link" href="/Financials/BalanceSheet">Balance Sheet</a>
+                <a class="nav-link" href="/Financials/IncomeStatement">Income Statement</a>
+                <a class="nav-link" href="/Financials/TrialBalance">Trial Balance</a>
+            </div>
+        </div>
+
+        <!-- 7. Organization Settings -->
+        <div class="nav-item px-3">
+            <div class="nav-link nav-dropdown-toggle">
+                <i class="nav-icon fa fa-group"></i> Organization Settings
+            </div>
+            <div class="nav-dropdown-items">
+                <a class="nav-link" href="/Administration/Company">Company</a>
+                <a class="nav-link" href="/Administration/Settings">Settings</a>
+            </div>
+        </div>
+
+        <!-- 8. System Administration -->
+        <AuthorizeView>
+            <Authorized>
+                @if (context.User.IsInRole("SystemAdministrators"))
+                {
+                    <div class="nav-item px-3">
+                        <div class="nav-link nav-dropdown-toggle">
+                            <i class="nav-icon fa fa-desktop"></i> System Administration
+                        </div>
+                        <div class="nav-dropdown-items">
+                            <a class="nav-link" href="/administration/users">Users</a>
+                            <a class="nav-link" href="/administration/roles">Roles</a>
+                            <a class="nav-link" href="/administration/groups">Groups</a>
+                            <a class="nav-link" href="/administration/auditlogs">Audit Logs</a>
+                        </div>
+                    </div>
+                }
+            </Authorized>
+        </AuthorizeView>
+    </nav>
+</div>
+
+@code {
+    private string? currentUrl;
+
+    protected override void OnInitialized()
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
+        NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
+    {
+        currentUrl = NavigationManager.ToBaseRelativePath(e.Location);
+        StateHasChanged();
+    }
+
+    public void Dispose()
+    {
+        NavigationManager.LocationChanged -= OnLocationChanged;
+    }
+}
