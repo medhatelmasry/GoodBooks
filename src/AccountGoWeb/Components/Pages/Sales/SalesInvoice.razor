@@ -13,35 +13,40 @@
         <div class="col">
         </div>
         <div class="col text-end">
-            @if (!isNew)
-            {
-                <button class="btn btn-outline-warning" @onclick="() => editMode = !editMode">
-                    <i class="fa fa-edit"></i> @(editMode ? "Cancel" : "Edit")
-                </button>
-            }
+            <a href="/Sales/SalesOrders" class="btn btn-outline-secondary">
+                <i class="fa fa-arrow-left"></i>
+                Back to Orders
+            </a>
         </div>
     </div>
 
     @if (loading)
     {
-        <p><em>Loading...</em></p>
+        <p><em>Loading invoice...</em></p>
     }
-    else if (errorMessage != null)
+    else if (!string.IsNullOrEmpty(errorMessage))
     {
         <div class="alert alert-danger" role="alert">
             <strong>Error:</strong> @errorMessage
         </div>
     }
-    else if (order == null)
-    {
-        <p>Sales order not found.</p>
-    }
     else
     {
         <div class="row">
-            <div class="col-md-8">
+            <div class="col-md-10">
                 <div class="card">
                     <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label"><strong>Invoice ID</strong></label>
+                                <input type="text" class="form-control" @bind="invoiceId" readonly />
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label"><strong>Invoice Date</strong></label>
+                                <input type="date" class="form-control" @bind="invoiceDate" />
+                            </div>
+                        </div>
+
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label"><strong>Customer</strong></label>
@@ -67,7 +72,7 @@
 
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <label class="form-label"><strong>Amount</strong></label>
+                                <label class="form-label"><strong>Total Amount</strong></label>
                                 <input type="number" class="form-control" @bind="totalAmount" step="0.01" readonly />
                             </div>
                         </div>
@@ -82,15 +87,13 @@
                                         <th>Amount</th>
                                         <th>Discount (%)</th>
                                         <th>Measurement</th>
-                                        <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @if (lineItems != null && lineItems.Count > 0)
                                     {
-                                        @for (int i = 0; i < lineItems.Count; i++)
+                                        @foreach (var line in lineItems)
                                         {
-                                            var line = lineItems[i];
                                             <tr>
                                                 <td>
                                                     <select class="form-control form-control-sm" @bind="line.ItemId">
@@ -122,13 +125,6 @@
                                                         }
                                                     </select>
                                                 </td>
-                                                <td>
-                                                    @{
-                                                        int itemIndex = i;
-                                                    }
-                                                    <button class="btn btn-sm btn-danger"
-                                                        @onclick="() => RemoveLineItem(itemIndex)">Remove</button>
-                                                </td>
                                             </tr>
                                         }
                                     }
@@ -136,19 +132,18 @@
                             </table>
                         </div>
 
-                        @if (editMode)
-                        {
-                            <button class="btn btn-primary mt-3" @onclick="AddLineItem">Add Line Item</button>
-                        }
+                        <div class="mt-2">
+                            <button type="button" class="btn btn-sm btn-outline-primary" @onclick="AddLineItem">
+                                <i class="fa fa-plus"></i>
+                                Add Row
+                            </button>
+                        </div>
                     </div>
                 </div>
 
                 <div class="mt-4">
-                    @if (editMode)
-                    {
-                        <button class="btn btn-success" @onclick="SaveSalesOrder">Save Order</button>
-                        <a href="/Sales/SalesOrders" class="btn btn-secondary ms-2">Cancel</a>
-                    }
+                    <button class="btn btn-primary" @onclick="SaveSalesInvoice">Save</button>
+                    <a href="/Sales/SalesInvoices" class="btn btn-secondary ms-2">Close</a>
                 </div>
             </div>
         </div>
@@ -158,12 +153,11 @@
 @code {
     private class LineItem
     {
-        public int ItemId { get; set; } = 1;
-        public string ItemDescription { get; set; } = "";
-        public int MeasurementId { get; set; } = 1;
-        public decimal Quantity { get; set; } = 1;
-        public decimal Amount { get; set; } = 0;
-        public decimal Discount { get; set; } = 0;
+        public int? ItemId { get; set; } = 0;
+        public decimal? Quantity { get; set; } = 0;
+        public decimal? Amount { get; set; } = 0;
+        public decimal? Discount { get; set; } = 0;
+        public int? MeasurementId { get; set; } = 0;
     }
 
     private class Customer
@@ -190,8 +184,11 @@
         public string description { get; set; } = "";
     }
 
-    [Parameter]
-    public string Id { get; set; } = null!;
+    [SupplyParameterFromQuery(Name = "id")]
+    public int Id { get; set; }
+
+    [SupplyParameterFromQuery(Name = "orderId")]
+    public int? OrderId { get; set; }
 
     [Inject]
     private IHttpClientFactory ClientFactory { get; set; } = null!;
@@ -199,18 +196,13 @@
     [Inject]
     private NavigationManager Navigation { get; set; } = null!;
 
-    private Dictionary<string, dynamic> order = new();
     private bool loading = true;
-    private bool editMode = false;
-    private bool isNew = false;
     private string? errorMessage = null;
 
-    private string orderNo = "";
-    private int customerId = 1;
-    private string customerName = "";
-    private DateTime orderDate = DateTime.Now;
-    private string referenceNo = "";
-    private int paymentTermId = 1;
+    private int invoiceId = 0;
+    private DateTime invoiceDate = DateTime.Now;
+    private int customerId = 0;
+    private int paymentTermId = 0;
     private decimal totalAmount = 0;
     private List<LineItem> lineItems = new();
 
@@ -221,26 +213,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Use OrderId if provided, otherwise use Id
+        var finalId = OrderId ?? Id;
+
         await LoadCustomers();
         await LoadItems();
         await LoadPaymentTerms();
         await LoadMeasurements();
-
-        isNew = Id == "new" || string.IsNullOrEmpty(Id);
-
-        if (isNew)
-        {
-            order = new Dictionary<string, dynamic>();
-            orderNo = new Random().Next(1, 99999).ToString();
-            orderDate = DateTime.Now;
-            lineItems = new List<LineItem> { new LineItem() };
-            editMode = true;
-            loading = false;
-        }
-        else
-        {
-            Navigation.NavigateTo("/Sales/AddSalesOrder");
-        }
+        await LoadInvoiceData(finalId);
     }
 
     private async Task LoadCustomers()
@@ -323,107 +303,144 @@
         }
     }
 
-    private void MapJsonToProperties(System.Text.Json.JsonElement data)
+    private async Task LoadInvoiceData(int saleOrderId)
     {
-        orderNo = GetJsonProperty(data, "no");
-        customerName = GetJsonProperty(data, "customerName");
-        referenceNo = GetJsonProperty(data, "referenceNo");
-
-        if (data.TryGetProperty("orderDate", out var dateElem))
+        try
         {
-            if (DateTime.TryParse(dateElem.GetString(), out var date))
-                orderDate = date;
-        }
+            string apiurl = System.Environment.GetEnvironmentVariable("APIURL") ?? "http://localhost:8001/api/";
+            var client = ClientFactory.CreateClient();
+            var response = await client.GetAsync($"{apiurl}sales/SalesInvoice?id={saleOrderId}");
 
-        lineItems = new();
-        if (data.TryGetProperty("salesOrderLines", out var linesElem) && linesElem.ValueKind ==
-        System.Text.Json.JsonValueKind.Array)
-        {
-            foreach (var lineElem in linesElem.EnumerateArray())
+            if (response.IsSuccessStatusCode)
             {
-                var line = new LineItem
+                var responseString = await response.Content.ReadAsStringAsync();
+                var invoiceData = JsonSerializer.Deserialize<JsonElement>(responseString, new JsonSerializerOptions
                 {
-                    ItemDescription = GetJsonProperty(lineElem, "itemDescription"),
-                    Quantity = GetJsonPropertyDecimal(lineElem, "quantity"),
-                    Amount = GetJsonPropertyDecimal(lineElem, "amount"),
-                    Discount = GetJsonPropertyDecimal(lineElem, "discount")
-                };
-                lineItems.Add(line);
+                    PropertyNameCaseInsensitive = true
+                });
+
+                if (invoiceData.ValueKind == JsonValueKind.Object)
+                {
+                    // Parse invoice data
+                    if (invoiceData.TryGetProperty("id", out var idElem))
+                        invoiceId = idElem.GetInt32();
+
+                    if (invoiceData.TryGetProperty("customerId", out var custElem))
+                        customerId = custElem.GetInt32();
+
+                    if (invoiceData.TryGetProperty("invoiceDate", out var dateElem))
+                    {
+                        if (DateTime.TryParse(dateElem.GetString(), out var date))
+                            invoiceDate = date;
+                    }
+
+                    if (invoiceData.TryGetProperty("paymentTermId", out var termElem))
+                        paymentTermId = termElem.GetInt32();
+
+                    // Parse line items
+                    if (invoiceData.TryGetProperty("salesInvoiceLines", out var linesElem) && linesElem.ValueKind == JsonValueKind.Array)
+                    {
+                        foreach (var lineElem in linesElem.EnumerateArray())
+                        {
+                            var line = new LineItem
+                            {
+                                ItemId = GetJsonInt(lineElem, "itemId"),
+                                Quantity = GetJsonDecimal(lineElem, "quantity"),
+                                Amount = GetJsonDecimal(lineElem, "amount"),
+                                Discount = GetJsonDecimal(lineElem, "discount"),
+                                MeasurementId = GetJsonInt(lineElem, "measurementId")
+                            };
+                            lineItems.Add(line);
+                        }
+                    }
+                    else if (saleOrderId == 0)
+                    {
+                        // For new invoices, add 1 empty row matching original implementation
+                        lineItems.Add(new LineItem { ItemId = 1, Quantity = 1, Amount = 0, Discount = 0, MeasurementId = 1 });
+                    }
+
+                    CalculateTotalAmount();
+                }
+            }
+            else
+            {
+                errorMessage = $"Failed to load invoice. Status: {response.StatusCode}";
             }
         }
-
-        CalculateTotalAmount();
+        catch (Exception ex)
+        {
+            errorMessage = $"Error loading invoice: {ex.Message}";
+        }
+        finally
+        {
+            loading = false;
+            StateHasChanged();
+        }
     }
 
-    private string GetJsonProperty(System.Text.Json.JsonElement elem, string propName)
+    private int? GetJsonInt(JsonElement elem, string propName)
     {
         if (elem.TryGetProperty(propName, out var prop))
         {
-            return prop.GetString() ?? "";
+            if (prop.TryGetInt32(out var val))
+                return val;
         }
-        return "";
+        return null;
     }
 
-    private decimal GetJsonPropertyDecimal(System.Text.Json.JsonElement elem, string propName)
+    private decimal? GetJsonDecimal(JsonElement elem, string propName)
     {
         if (elem.TryGetProperty(propName, out var prop))
         {
             if (prop.TryGetDecimal(out var val))
                 return val;
         }
-        return 0;
-    }
-
-    private void AddLineItem()
-    {
-        lineItems.Add(new LineItem());
-        CalculateTotalAmount();
-        StateHasChanged();
-    }
-
-    private void RemoveLineItem(int index)
-    {
-        if (index >= 0 && index < lineItems.Count)
-        {
-            lineItems.RemoveAt(index);
-        }
-        CalculateTotalAmount();
-        StateHasChanged();
+        return null;
     }
 
     private void CalculateTotalAmount()
     {
         totalAmount = lineItems.Sum(line =>
         {
-            var qty = line.Quantity;
-            var amt = line.Amount;
-            var disc = line.Discount;
+            var qty = line.Quantity ?? 0;
+            var amt = line.Amount ?? 0;
+            var disc = line.Discount ?? 0;
             var total = qty * amt;
             var discount = (disc / 100) * total;
             return total - discount;
         });
     }
 
-    private async Task SaveSalesOrder()
+    private void AddLineItem()
+    {
+        lineItems.Add(new LineItem { ItemId = 1, Quantity = 1, Amount = 0, Discount = 0, MeasurementId = 1 });
+        StateHasChanged();
+    }
+
+    private async Task SaveSalesInvoice()
     {
         try
         {
             CalculateTotalAmount();
             string apiurl = System.Environment.GetEnvironmentVariable("APIURL") ?? "http://localhost:8001/api/";
 
+            // Use OrderId if provided, otherwise use Id
+            var finalId = OrderId ?? Id;
+
             var payload = new
             {
+                Id = invoiceId,
                 CustomerId = customerId,
-                OrderDate = orderDate,
+                InvoiceDate = invoiceDate,
                 PaymentTermId = paymentTermId,
-                ReferenceNo = referenceNo,
-                SalesOrderLines = lineItems.Select(line => new
+                FromSalesOrderId = finalId, // The sales order this invoice is being created from
+                SalesInvoiceLines = lineItems.Select(line => new
                 {
                     ItemId = line.ItemId,
-                    MeasurementId = line.MeasurementId,
                     Quantity = line.Quantity,
                     Amount = line.Amount,
-                    Discount = line.Discount
+                    Discount = line.Discount,
+                    MeasurementId = line.MeasurementId
                 }).ToList()
             };
 
@@ -431,31 +448,24 @@
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
 
-            var response = await client.PostAsync($"{apiurl}sales/addsalesorder", content);
+            var response = await client.PostAsync($"{apiurl}sales/SaveSalesInvoice", content);
 
             if (response.IsSuccessStatusCode)
             {
-                editMode = false;
-                errorMessage = null;
                 await Task.Delay(100);
-                Navigation.NavigateTo("/Sales/SalesOrders", forceLoad: true);
+                Navigation.NavigateTo("/Sales/SalesInvoices", forceLoad: true);
             }
             else
             {
                 var errorContent = await response.Content.ReadAsStringAsync();
-                errorMessage = $"Failed to save sales order. Status: {response.StatusCode}. Response: {errorContent}";
+                errorMessage = $"Failed to save invoice. Status: {response.StatusCode}. Response: {errorContent}";
                 StateHasChanged();
             }
         }
         catch (Exception ex)
         {
-            errorMessage = $"Error saving sales order: {ex.Message}";
+            errorMessage = $"Error saving invoice: {ex.Message}";
             StateHasChanged();
         }
-    }
-
-    private void CancelSalesOrder()
-    {
-        Navigation.NavigateTo("/Sales/SalesOrders");
     }
 }
