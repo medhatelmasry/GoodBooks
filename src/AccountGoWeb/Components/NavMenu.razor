@@ -1,132 +1,139 @@
 ﻿@using Microsoft.AspNetCore.Components
-@using Microsoft.AspNetCore.Components.Authorization
 @implements IDisposable
 
 @inject NavigationManager NavigationManager
 
-<!-- TOP BRAND -->
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="/">GoodBooks</a>
+<input type="checkbox" title="Navigation menu" class="navbar-toggler" id="sidebar-toggle" />
+
+<div class="sidebar">
+
+
+    <div class="nav-scrollable">
+        <nav class="sidebar-nav">
+            <div class="nav-item">
+                <a class="nav-link" href="/">
+                    <i class="fa fa-dashboard"></i> Dashboard
+                </a>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isReceivableOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(1)">
+                    <i class="fa fa-industry"></i> Accounts Receivable
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/Quotations/Quotations">Sales Quotations</a></li>
+                    <li><a class="nav-link" href="/Sales/SalesOrders">Sales Orders</a></li>
+                    <li><a class="nav-link" href="/Sales/SalesReceipts">Sales Receipts</a></li>
+                    <li><a class="nav-link" href="/Sales/SalesInvoices">Sales Invoices</a></li>
+                    <li><a class="nav-link" href="/Donations/DonationInvoices">Donation Invoices</a></li>
+                    <li><a class="nav-link" href="/Sales/Customers">Customers</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isPayableOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(2)">
+                    <i class="fa fa-link"></i> Accounts Payable
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/Purchasing/PurchaseOrders">Purchase Orders</a></li>
+                    <li><a class="nav-link" href="/Purchasing/PurchaseInvoices">Purchase Invoices</a></li>
+                    <li><a class="nav-link" href="/Purchasing/Vendors">Vendors</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isInventoryOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(3)">
+                    <i class="fa fa-wrench"></i> Inventory Control
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/Inventory/Index">Items</a></li>
+                    <li><a class="nav-link" href="/Inventory/ICJ">Inventory Control Journal</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isFinancialsOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(4)">
+                    <i class="fa fa-bank"></i> Financials
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/Financials/JournalEntries">Journal Entries</a></li>
+                    <li><a class="nav-link" href="/Financials/GeneralLedger">General Ledger</a></li>
+                    <li><a class="nav-link" href="/Tax/Taxes">Taxes</a></li>
+                    <li><a class="nav-link" href="/Financials/Accounts">Chart of Accounts</a></li>
+                    <li><a class="nav-link" href="/Financials/Banks">Banks</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isReportsOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(5)">
+                    <i class="fa fa-line-chart"></i> Reports
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/Financials/BalanceSheet">Balance Sheet</a></li>
+                    <li><a class="nav-link" href="/Financials/IncomeStatement">Income Statement</a></li>
+                    <li><a class="nav-link" href="/Financials/TrialBalance">Trial Balance</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isOrgOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(6)">
+                    <i class="fa fa-group"></i> Organization Settings
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/Administration/Company">Company</a></li>
+                    <li><a class="nav-link" href="/Administration/Settings">Settings</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item nav-dropdown @(isSysAdminOpen ? "open" : "")">
+                <a class="nav-link nav-dropdown-toggle" href="javascript:void(0)" @onclick="() => ToggleDropdown(7)">
+                    <i class="fa fa-desktop"></i> System Administration
+                </a>
+                <ul class="nav-dropdown-items">
+                    <li><a class="nav-link" href="/administration/users">Security Users</a></li>
+                    <li><a class="nav-link" href="/administration/roles">Security Roles</a></li>
+                    <li><a class="nav-link" href="/administration/groups">Security Groups</a></li>
+                    <li><a class="nav-link" href="/administration/auditlogs">Audit Logs</a></li>
+                </ul>
+            </div>
+
+            <div class="nav-item">
+                <a class="nav-link" href="/Account/Logout">
+                    <i class="fa fa-sign-out"></i> Logout
+                </a>
+            </div>
+        </nav>
     </div>
-</div>
-
-<input type="checkbox" title="Navigation menu" class="navbar-toggler" />
-
-<div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
-    <nav class="flex-column">
-
-        <!-- 1. Dashboard -->
-        <div class="nav-item px-3">
-            <a class="nav-link" href="/Dashboard/MonthlySales">
-                <i class="nav-icon fa fa-dashboard"></i> Dashboard
-            </a>
-        </div>
-
-        <!-- 2. Accounts Receivable -->
-        <div class="nav-item px-3">
-            <div class="nav-link nav-dropdown-toggle">
-                <i class="nav-icon fa fa-industry"></i> Accounts Receivable
-            </div>
-            <div class="nav-dropdown-items">
-                <a class="nav-link" href="/Quotations/Quotations">Sales Quotations</a>
-                <a class="nav-link" href="/Sales/SalesOrders">Sales Orders</a>
-                <a class="nav-link" href="/Sales/SalesReceipts">Sales Receipts</a>
-                <a class="nav-link" href="/Sales/SalesInvoices">Sales Invoices</a>
-                <a class="nav-link" href="/Donations/DonationInvoices">Donation Invoices</a>
-                <a class="nav-link" href="/Sales/Customers">Customers</a>
-            </div>
-        </div>
-
-        <!-- 3. Accounts Payable -->
-        <div class="nav-item px-3">
-            <div class="nav-link nav-dropdown-toggle">
-                <i class="nav-icon fa fa-link"></i> Accounts Payable
-            </div>
-            <div class="nav-dropdown-items">
-                <a class="nav-link" href="/Purchasing/PurchaseOrders">Purchase Orders</a>
-                <a class="nav-link" href="/Purchasing/PurchaseInvoices">Purchase Invoices</a>
-                <a class="nav-link" href="/Purchasing/Vendors">Vendors</a>
-            </div>
-        </div>
-
-        <!-- 4. Inventory Control -->
-        <div class="nav-item px-3">
-            <div class="nav-link nav-dropdown-toggle">
-                <i class="nav-icon fa fa-wrench"></i> Inventory Control
-            </div>
-            <div class="nav-dropdown-items">
-                <a class="nav-link" href="/Inventory/Index">Items</a>
-                <a class="nav-link" href="/Inventory/ICJ">Inventory Control Journal</a>
-            </div>
-        </div>
-
-        <!-- 5. Financials -->
-        <div class="nav-item px-3">
-            <div class="nav-link nav-dropdown-toggle">
-                <i class="nav-icon fa fa-bank"></i> Financials
-            </div>
-            <div class="nav-dropdown-items">
-                <a class="nav-link" href="/Financials/JournalEntries">Journal Entries</a>
-                <a class="nav-link" href="/Financials/GeneralLedger">General Ledger</a>
-                <a class="nav-link" href="/Tax/Taxes">Taxes</a>
-                <a class="nav-link" href="/Financials/Accounts">Chart of Accounts</a>
-                <a class="nav-link" href="/Financials/Banks">Banks</a>
-            </div>
-        </div>
-
-        <!-- 6. Reports -->
-        <div class="nav-item px-3">
-            <div class="nav-link nav-dropdown-toggle">
-                <i class="nav-icon fa fa-line-chart"></i> Reports
-            </div>
-            <div class="nav-dropdown-items">
-                <a class="nav-link" href="/Financials/BalanceSheet">Balance Sheet</a>
-                <a class="nav-link" href="/Financials/IncomeStatement">Income Statement</a>
-                <a class="nav-link" href="/Financials/TrialBalance">Trial Balance</a>
-            </div>
-        </div>
-
-        <!-- 7. Organization Settings -->
-        <div class="nav-item px-3">
-            <div class="nav-link nav-dropdown-toggle">
-                <i class="nav-icon fa fa-group"></i> Organization Settings
-            </div>
-            <div class="nav-dropdown-items">
-                <a class="nav-link" href="/Administration/Company">Company</a>
-                <a class="nav-link" href="/Administration/Settings">Settings</a>
-            </div>
-        </div>
-
-        <!-- 8. System Administration -->
-        <AuthorizeView>
-            <Authorized>
-                @if (context.User.IsInRole("SystemAdministrators"))
-                {
-                    <div class="nav-item px-3">
-                        <div class="nav-link nav-dropdown-toggle">
-                            <i class="nav-icon fa fa-desktop"></i> System Administration
-                        </div>
-                        <div class="nav-dropdown-items">
-                            <a class="nav-link" href="/administration/users">Users</a>
-                            <a class="nav-link" href="/administration/roles">Roles</a>
-                            <a class="nav-link" href="/administration/groups">Groups</a>
-                            <a class="nav-link" href="/administration/auditlogs">Audit Logs</a>
-                        </div>
-                    </div>
-                }
-            </Authorized>
-        </AuthorizeView>
-    </nav>
 </div>
 
 @code {
     private string? currentUrl;
+    private bool isReceivableOpen = false;
+    private bool isPayableOpen = false;
+    private bool isInventoryOpen = false;
+    private bool isFinancialsOpen = false;
+    private bool isReportsOpen = false;
+    private bool isOrgOpen = false;
+    private bool isSysAdminOpen = false;
 
     protected override void OnInitialized()
     {
         currentUrl = NavigationManager.ToBaseRelativePath(NavigationManager.Uri);
         NavigationManager.LocationChanged += OnLocationChanged;
+    }
+
+    private void ToggleDropdown(int dropdownId)
+    {
+        switch (dropdownId)
+        {
+            case 1: isReceivableOpen = !isReceivableOpen; break;
+            case 2: isPayableOpen = !isPayableOpen; break;
+            case 3: isInventoryOpen = !isInventoryOpen; break;
+            case 4: isFinancialsOpen = !isFinancialsOpen; break;
+            case 5: isReportsOpen = !isReportsOpen; break;
+            case 6: isOrgOpen = !isOrgOpen; break;
+            case 7: isSysAdminOpen = !isSysAdminOpen; break;
+        }
     }
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
