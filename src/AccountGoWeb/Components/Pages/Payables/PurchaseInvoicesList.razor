@@ -1,13 +1,7 @@
-﻿@page "/payables/purchase-invoices"
 @rendermode InteractiveServer
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @inject IHttpClientFactory ClientFactory
-@inject NavigationManager Navigation
-
-<PageTitle>Purchase Invoices</PageTitle>
-
-<h3>Purchase Invoices</h3>
 
 @if (getError)
 {
@@ -22,19 +16,19 @@ else if (purchaseInvoices is null)
 else
 {
     <div class="mb-3">
-        <button class="btn btn-primary" @onclick="NavigateToAdd">
+        <a href="/purchasing/addpurchaseinvoice" class="btn btn-primary">
             <i class="fa fa-plus"></i> New Invoice
-        </button>
+        </a>
         @if (selectedInvoice != null)
         {
-            <button class="btn btn-secondary" @onclick="ViewInvoice">
+            <a href="/purchasing/purchaseinvoice?id=@selectedInvoice.Id" class="btn btn-secondary">
                 <i class="fa fa-edit"></i> View
-            </button>
+            </a>
             @if (!selectedInvoice.IsPaid && selectedInvoice.Posted)
             {
-                <button class="btn btn-success" @onclick="MakePayment">
+                <a href="/purchasing/payment/@selectedInvoice.Id" class="btn btn-success">
                     <i class="fa fa-tasks"></i> Make Payment
-                </button>
+                </a>
             }
         }
     </div>
@@ -49,8 +43,6 @@ else
                     <th>Amount</th>
                     <th>Amount Paid</th>
                     <th>Ref No</th>
-                    <th>Posted</th>
-                    <th>Is Paid</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -63,24 +55,18 @@ else
                         <td>@invoice.No</td>
                         <td>@invoice.VendorName</td>
                         <td>@invoice.InvoiceDate.ToString("yyyy-MM-dd")</td>
-                        <td>@invoice.Amount.ToString("C")</td>
-                        <td>@invoice.AmountPaid.ToString("C")</td>
+                        <td>@("$" + invoice.Amount.ToString("N2"))</td>
+                        <td>@("$" + invoice.AmountPaid.ToString("N2"))</td>
                         <td>@invoice.ReferenceNo</td>
                         <td>
-                            <input type="checkbox" checked="@invoice.Posted" disabled />
-                        </td>
-                        <td>
-                            <input type="checkbox" checked="@invoice.IsPaid" disabled />
-                        </td>
-                        <td>
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewInvoiceById(invoice.Id)" @onclick:stopPropagation="true">
+                            <a href="/purchasing/purchaseinvoice?id=@invoice.Id" class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true">
                                 View
-                            </button>
+                            </a>
                             @if (!invoice.IsPaid && invoice.Posted)
                             {
-                                <button class="btn btn-sm btn-outline-success" @onclick="() => MakePaymentById(invoice.Id)" @onclick:stopPropagation="true">
+                                <a href="/purchasing/payment/@invoice.Id" class="btn btn-sm btn-outline-success" @onclick:stopPropagation="true">
                                     Pay
-                                </button>
+                                </a>
                             }
                         </td>
                     </tr>
@@ -138,7 +124,6 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading purchase invoices: {ex.Message}");
             getError = true;
         }
 
@@ -149,37 +134,6 @@ else
     {
         selectedInvoice = invoice;
         StateHasChanged();
-    }
-
-    private void ViewInvoiceById(int id)
-    {
-        Navigation.NavigateTo($"/payables/purchase-invoice/{id}");
-    }
-
-    private void ViewInvoice()
-    {
-        if (selectedInvoice != null)
-        {
-            Navigation.NavigateTo($"/payables/purchase-invoice/{selectedInvoice.Id}");
-        }
-    }
-
-    private void NavigateToAdd()
-    {
-        Navigation.NavigateTo("/payables/purchase-invoice/add");
-    }
-
-    private void MakePaymentById(int id)
-    {
-        Navigation.NavigateTo($"/payables/payment/{id}");
-    }
-
-    private void MakePayment()
-    {
-        if (selectedInvoice != null)
-        {
-            Navigation.NavigateTo($"/payables/payment/{selectedInvoice.Id}");
-        }
     }
 
     public class PurchaseInvoiceDto
@@ -196,3 +150,4 @@ else
         public bool IsPaid { get; set; }
     }
 }
+

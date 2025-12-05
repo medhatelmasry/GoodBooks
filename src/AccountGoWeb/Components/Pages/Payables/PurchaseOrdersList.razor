@@ -1,13 +1,8 @@
-﻿@page "/payables/purchase-orders"
 @rendermode InteractiveServer
 @using System.Text.Json
 @using System.Text.Json.Serialization
 @inject IHttpClientFactory ClientFactory
 @inject NavigationManager Navigation
-
-<PageTitle>Purchase Orders</PageTitle>
-
-<h3>Purchase Orders</h3>
 
 @if (getError)
 {
@@ -22,19 +17,19 @@ else if (purchaseOrders is null)
 else
 {
     <div class="mb-3">
-        <button class="btn btn-primary" @onclick="NavigateToAdd">
+        <a href="/purchasing/addpurchaseorder" class="btn btn-primary">
             <i class="fa fa-plus"></i> New Order
-        </button>
+        </a>
         @if (selectedPurchaseOrder != null)
         {
-            <button class="btn btn-secondary" @onclick="ViewPurchaseOrder">
+            <a href="/purchasing/purchaseorder?id=@selectedPurchaseOrder.Id" class="btn btn-secondary">
                 <i class="fa fa-edit"></i> View
-            </button>
+            </a>
             @if (selectedPurchaseOrder.StatusId != 3)
             {
-                <button class="btn btn-info" @onclick="CreateInvoice">
+                <a href="/purchasing/addpurchaseinvoice?purchId=@selectedPurchaseOrder.Id" class="btn btn-info">
                     <i class="fa fa-plus"></i> Create Invoice
-                </button>
+                </a>
             }
         }
     </div>
@@ -48,7 +43,6 @@ else
                     <th>Order Date</th>
                     <th>Amount</th>
                     <th>Ref No</th>
-                    <th>Status</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -61,13 +55,12 @@ else
                         <td>@order.No</td>
                         <td>@order.VendorName</td>
                         <td>@order.OrderDate.ToString("yyyy-MM-dd")</td>
-                        <td>@order.Amount.ToString("C")</td>
+                        <td>@("$" + order.Amount.ToString("N2"))</td>
                         <td>@order.ReferenceNo</td>
-                        <td>@GetStatusText(order.StatusId)</td>
                         <td>
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewOrder(order.Id)" @onclick:stopPropagation="true">
+                            <a href="/purchasing/purchaseorder?id=@order.Id" class="btn btn-sm btn-outline-primary" @onclick:stopPropagation="true">
                                 View
-                            </button>
+                            </a>
                         </td>
                     </tr>
                 }
@@ -124,7 +117,6 @@ else
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"Error loading purchase orders: {ex.Message}");
             getError = true;
         }
 
@@ -135,43 +127,6 @@ else
     {
         selectedPurchaseOrder = order;
         StateHasChanged();
-    }
-
-    private void ViewOrder(int id)
-    {
-        Navigation.NavigateTo($"/payables/purchase-order/{id}");
-    }
-
-    private void ViewPurchaseOrder()
-    {
-        if (selectedPurchaseOrder != null)
-        {
-            Navigation.NavigateTo($"/payables/purchase-order/{selectedPurchaseOrder.Id}");
-        }
-    }
-
-    private void NavigateToAdd()
-    {
-        Navigation.NavigateTo("/payables/purchase-order/add");
-    }
-
-    private void CreateInvoice()
-    {
-        if (selectedPurchaseOrder != null)
-        {
-            Navigation.NavigateTo($"/payables/purchase-invoice/add?purchId={selectedPurchaseOrder.Id}");
-        }
-    }
-
-    private string GetStatusText(int statusId)
-    {
-        return statusId switch
-        {
-            1 => "Open",
-            2 => "Partially Invoiced",
-            3 => "Fully Invoiced",
-            _ => "Unknown"
-        };
     }
 
     public class PurchaseOrderDto
@@ -186,3 +141,4 @@ else
         public int StatusId { get; set; }
     }
 }
+
