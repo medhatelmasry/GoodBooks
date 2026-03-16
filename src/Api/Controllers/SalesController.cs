@@ -895,20 +895,6 @@ namespace Api.Controllers
             }
         }
 
-        [HttpPost("CreateSalesInvoice")]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public IActionResult CreateSalesInvoice([FromBody] Dto.Sales.SalesInvoice salesInvoiceDto)
-        {
-            var result = _salesService.CreateSalesInvoice(salesInvoiceDto);
-
-            if (result.IsFailure)
-                return BadRequest(result.Error.Message);
-
-            var salesInvoiceToReturn = result.Value;
-
-            return Ok(salesInvoiceToReturn);
-        }
-
         [HttpPost("UpdateSalesInvoice")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult UpdateSalesInvoice([FromBody] Dto.Sales.SalesInvoice salesInvoiceDto)

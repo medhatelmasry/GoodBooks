@@ -104,18 +104,6 @@ namespace Api.Controllers
             return Ok(invoiceDto);
         }
 
-        [HttpPost("CreateDonationInvoice")]
-        [ServiceFilter(typeof(ValidationFilterAttribute))]
-        public IActionResult CreateDonationInvoice([FromBody] DonationInvoice donationInvoiceDto)
-        {
-            var result = _donationsService.CreateDonationInvoice(donationInvoiceDto);
-
-            if (result.IsFailure)
-                return BadRequest(result.Error.Message);
-
-            return Ok(result.Value);
-        }
-
         [HttpPost("UpdateDonationInvoice")]
         [ServiceFilter(typeof(ValidationFilterAttribute))]
         public IActionResult UpdateDonationInvoice([FromBody] DonationInvoice donationInvoiceDto)
