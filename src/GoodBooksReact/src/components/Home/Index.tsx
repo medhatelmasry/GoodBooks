@@ -83,6 +83,29 @@ class Home extends React.Component<HomeProps, HomeState> {
                                         </li>
                                     </ul>
                                 </li>
+                                <li className="nav-item dropdown">
+                                    <a
+                                    className="nav-link mx-2 dropdown-toggle"
+                                    href="#"
+                                    id="navbarAdminDropdown"
+                                    role="button"
+                                    data-bs-toggle="dropdown"
+                                    aria-expanded="false"
+                                    >
+                                    Administration
+                                    </a>
+                                    <ul
+                                    className="dropdown-menu"
+                                    aria-labelledby="navbarAdminDropdown"
+                                    >
+                                        <li className="nav-item">
+                                            <a className="nav-link mx-2" href="/admin/roles">Roles</a>
+                                        </li>
+                                        <li className="nav-item">
+                                            <a className="nav-link mx-2" href="/admin/users">Users</a>
+                                        </li>
+                                    </ul>
+                                </li>
                             </ul>
                         </div>
                      </div> {/*<!-- container-fluid --> */}

@@ -198,12 +198,44 @@ namespace Services.Security
             }
         }
 
+        public void CreateRole(string roleName, string displayName)
+        {
+            var role = new SecurityRole()
+            {
+                Name = roleName,
+                DisplayName = displayName,
+            };
+
+            _securityRoleRepo.Insert(role);
+        }
+
+        public void UpdateRole(int roleId, string roleName, string displayName)
+        {
+            var entity = _securityRoleRepo.GetById(roleId);
+            entity.Name = roleName;
+            entity.DisplayName = displayName;
+
+            _securityRoleRepo.Update(entity);
+        }
+
         public void DeleteRole(int roleId)
         {
-            //RemoveRolePermission(roleId);
-            var entity = _securityRoleRepo.GetById(roleId);
+            var permissionsToRemove = _securityRolePermissionRepo.Table.Where(x => x.SecurityRoleId == roleId).ToList();
+            foreach (var p in permissionsToRemove)
+                _securityRolePermissionRepo.Delete(p);
 
+            var entity = _securityRoleRepo.GetById(roleId);
             _securityRoleRepo.Delete(entity);
+        }
+
+        public void RemovePermissionFromRole(int roleId, int permissionId)
+        {
+            var item = _securityRolePermissionRepo.Table
+                .Where(x => x.SecurityRoleId == roleId && x.SecurityPermissionId == permissionId)
+                .FirstOrDefault();
+
+            if (item != null)
+                _securityRolePermissionRepo.Delete(item);
         }
 
         public void AddUser(string username, string email, string firstname, string lastname)

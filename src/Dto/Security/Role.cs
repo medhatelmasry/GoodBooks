@@ -7,6 +7,7 @@ namespace Dto.Security
         public string? Name { get; set; }
         public string? DisplayName { get; set; }
         public bool SysAdmin { get; set; }
+        public bool System { get; set; }
         public IList<User> Users { get; set; }
         public IList<Permission> Permissions { get; set; }
 

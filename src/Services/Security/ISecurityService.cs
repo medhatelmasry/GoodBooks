@@ -31,7 +31,10 @@ namespace Services.Security
         //void RemoveRolePermission(int roleId);
         IEnumerable<User> GetAllUser();
         void AddRole(string roleName, int roleId = 0);
+        void CreateRole(string roleName, string displayName);
+        void UpdateRole(int roleId, string roleName, string displayName);
         void DeleteRole(int roleId);
+        void RemovePermissionFromRole(int roleId, int permissionId);
         void AddUser(string username, string email, string firstname, string lastname);
     }
 }

@@ -142,7 +142,9 @@ namespace Api.Controllers
                 {
                     Id = role.Id,
                     Name = role.Name,
-                    DisplayName = role.DisplayName
+                    DisplayName = role.DisplayName,
+                    SysAdmin = role.SysAdmin,
+                    System = role.System
                 };
 
                 foreach (var permission in role.Permissions)
@@ -276,5 +278,143 @@ namespace Api.Controllers
                 return new BadRequestObjectResult(errors);
             }
         }
+
+        [HttpPost]
+        [Route("SaveRole")]
+        public IActionResult SaveRole([FromBody] Role roleDto)
+        {
+            string[] errors;
+            try
+            {
+                if (roleDto.Id == 0)
+                {
+                    _securityService.CreateRole(roleDto.Name ?? string.Empty, roleDto.DisplayName ?? string.Empty);
+                }
+                else
+                {
+                    var existing = _securityService.GetSecurityRole(roleDto.Id);
+                    if (existing == null)
+                        return new BadRequestObjectResult(new[] { "Role not found." });
+                    if (existing.SysAdmin || existing.System)
+                        return new BadRequestObjectResult(new[] { "Cannot modify a system role." });
+
+                    _securityService.UpdateRole(roleDto.Id, roleDto.Name ?? string.Empty, roleDto.DisplayName ?? string.Empty);
+                }
+
+                return new ObjectResult(Ok());
+            }
+            catch (Exception ex)
+            {
+                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+                return new BadRequestObjectResult(errors);
+            }
+        }
+
+        [HttpDelete]
+        [Route("DeleteRole/{id}")]
+        public IActionResult DeleteRole(int id)
+        {
+            string[] errors;
+            try
+            {
+                var role = _securityService.GetSecurityRole(id);
+                if (role == null)
+                    return new BadRequestObjectResult(new[] { "Role not found." });
+                if (role.SysAdmin || role.System)
+                    return new BadRequestObjectResult(new[] { "Cannot delete a system role." });
+
+                var usersInRole = _securityService.GetUsersInSecurityRole(role.Name);
+                if (usersInRole != null && usersInRole.Any())
+                    return new BadRequestObjectResult(new[] { "Cannot delete a role that is still assigned to users." });
+
+                _securityService.DeleteRole(id);
+                return new ObjectResult(Ok());
+            }
+            catch (Exception ex)
+            {
+                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+                return new BadRequestObjectResult(errors);
+            }
+        }
+
+        [HttpPost]
+        [Route("AssignRoleToUser")]
+        public IActionResult AssignRoleToUser([FromBody] UserRoleRequest request)
+        {
+            string[] errors;
+            try
+            {
+                _securityService.AddUserInRole(request.UserId, request.RoleId);
+                return new ObjectResult(Ok());
+            }
+            catch (Exception ex)
+            {
+                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+                return new BadRequestObjectResult(errors);
+            }
+        }
+
+        [HttpPost]
+        [Route("RemoveRoleFromUser")]
+        public IActionResult RemoveRoleFromUser([FromBody] UserRoleRequest request)
+        {
+            string[] errors;
+            try
+            {
+                _securityService.RemoveUserInRole(request.UserId, request.RoleId);
+                return new ObjectResult(Ok());
+            }
+            catch (Exception ex)
+            {
+                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+                return new BadRequestObjectResult(errors);
+            }
+        }
+
+        [HttpPost]
+        [Route("AddPermissionToRole")]
+        public IActionResult AddPermissionToRole([FromBody] RolePermissionRequest request)
+        {
+            string[] errors;
+            try
+            {
+                _securityService.AddPermissionToRole(request.RoleId, request.PermissionId);
+                return new ObjectResult(Ok());
+            }
+            catch (Exception ex)
+            {
+                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+                return new BadRequestObjectResult(errors);
+            }
+        }
+
+        [HttpPost]
+        [Route("RemovePermissionFromRole")]
+        public IActionResult RemovePermissionFromRole([FromBody] RolePermissionRequest request)
+        {
+            string[] errors;
+            try
+            {
+                _securityService.RemovePermissionFromRole(request.RoleId, request.PermissionId);
+                return new ObjectResult(Ok());
+            }
+            catch (Exception ex)
+            {
+                errors = new[] { ex.InnerException != null ? ex.InnerException.Message : ex.Message };
+                return new BadRequestObjectResult(errors);
+            }
+        }
+    }
+
+    public class UserRoleRequest
+    {
+        public int UserId { get; set; }
+        public int RoleId { get; set; }
+    }
+
+    public class RolePermissionRequest
+    {
+        public int RoleId { get; set; }
+        public int PermissionId { get; set; }
     }
 }
