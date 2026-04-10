@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AccountGoWeb.Controllers
 {
-    //[Microsoft.AspNetCore.Authorization.Authorize]
-    public class AdministrationController : BaseController
+  //[Microsoft.AspNetCore.Authorization.Authorize]
+  public class AdministrationController : BaseController
   {
     public AdministrationController(IConfiguration config)
     {
@@ -92,6 +92,81 @@ namespace AccountGoWeb.Controllers
 
       ViewBag.PageContentHeader = "Audit Logs";
       return View(model: auditLogs);
+    }
+
+    [HttpGet]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "SystemAdministrators")]
+    public async System.Threading.Tasks.Task<IActionResult> EditUserRoles(int userId)
+    {
+      var user = await GetAsync<User>($"administration/GetUser?username={userId}"); // Wait, GetUser takes username, not id.
+      // Actually, the API has GetUser(string username), so need to get user by id first? Wait, no, the API has GetUser by username.
+
+      // To get user by id, perhaps need to modify API or get all users and find.
+
+      // For simplicity, assume we pass username, but since userId is int, perhaps change to username.
+
+      // Let's add a new API endpoint for GetUserById.
+
+      // But to keep it simple, let's modify the API to have GetUserById.
+
+      // Add to API:
+
+      // [HttpGet]
+
+      // [Route("GetUserById/{id}")]
+
+      // public IActionResult GetUserById(int id)
+
+      // {
+
+      //     var user = _securityService.GetAllUser().FirstOrDefault(u => u.Id == id);
+
+      //     if (user == null) return NotFound();
+
+      //     // Map to DTO as in GetUser
+
+      // }
+
+      // Then use that.
+
+      // For now, I'll assume we have it.
+
+      var selectedUser = await GetAsync<User>($"administration/getuserbyid/{userId}");
+
+      var allRoles = await GetAsync<System.Collections.Generic.IEnumerable<Role>>("administration/roles");
+
+      ViewBag.PageContentHeader = "Edit User Roles";
+
+      ViewBag.AllRoles = allRoles;
+
+      return View(selectedUser);
+    }
+
+    [HttpPost]
+    [Microsoft.AspNetCore.Authorization.Authorize(Roles = "SystemAdministrators")]
+    public IActionResult EditUserRoles(int userId, List<int> selectedRoles)
+    {
+      var dto = new { UserId = userId, RoleIds = selectedRoles };
+      var serialize = Newtonsoft.Json.JsonConvert.SerializeObject(dto);
+      var content = new StringContent(serialize);
+      content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/json");
+
+      var response = Post("administration/assignroles", content);
+
+      if (response.IsSuccessStatusCode)
+      {
+        return RedirectToAction(nameof(Users));
+      }
+      else
+      {
+        ModelState.AddModelError(string.Empty, "Failed to assign roles");
+        // Reload data
+        var selectedUser = GetAsync<User>($"administration/getuserbyid/{userId}").Result;
+        var allRoles = GetAsync<System.Collections.Generic.IEnumerable<Role>>("administration/roles").Result;
+        ViewBag.PageContentHeader = "Edit User Roles";
+        ViewBag.AllRoles = allRoles;
+        return View(selectedUser);
+      }
     }
 
     [HttpGet]

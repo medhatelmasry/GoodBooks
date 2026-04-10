@@ -1,0 +1,54 @@
+@model Dto.Security.User
+@using AccountGoWeb.Models;
+@{
+    ViewBag.Title = "Edit User Roles";
+}
+
+<h2>@ViewBag.PageContentHeader</h2>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">User Information</h3>
+            </div>
+            <div class="box-body">
+                <dl class="dl-horizontal">
+                    <dt>Username:</dt>
+                    <dd>@Model.UserName</dd>
+                    <dt>First Name:</dt>
+                    <dd>@Model.FirstName</dd>
+                    <dt>Last Name:</dt>
+                    <dd>@Model.LastName</dd>
+                    <dt>Email:</dt>
+                    <dd>@Model.Email</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">Assign Roles</h3>
+            </div>
+            <form asp-action="EditUserRoles" method="post">
+                <input type="hidden" name="userId" value="@Model.Id" />
+                <div class="box-body">
+                    @foreach (var role in ViewBag.AllRoles)
+                    {
+                        <div class="checkbox">
+                            <label>
+                                <input type="checkbox" name="selectedRoles" value="@role.Id" @(Model.Roles.Any(r => r.Id == role.Id) ? "checked" : "") />
+                                @role.DisplayName
+                            </label>
+                        </div>
+                    }
+                </div>
+                <div class="box-footer">
+                    <button type="submit" class="btn btn-primary">Save Roles</button>
+                    <a href="@Url.Action("Users")" class="btn btn-default">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
