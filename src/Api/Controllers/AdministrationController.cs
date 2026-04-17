@@ -241,51 +241,6 @@ namespace Api.Controllers
             return new ObjectResult(userDto);
         }
 
-        [HttpGet]
-        [Route("GetUserById/{id}")]
-        public IActionResult GetUserById(int id)
-        {
-            var user = _securityService.GetAllUser().FirstOrDefault(u => u.Id == id);
-            if (user == null) return NotFound();
-
-            var userDto = new Dto.Security.User
-            {
-                Id = user.Id,
-                FirstName = user.Firstname,
-                LastName = user.Lastname,
-                UserName = user.UserName,
-                Email = user.EmailAddress
-            };
-
-            foreach (var role in user.Roles)
-            {
-                var roleDto = new Dto.Security.Role
-                {
-                    Id = role.SecurityRoleId,
-                    Name = role.SecurityRole.Name,
-                    SysAdmin = role.SecurityRole.SysAdmin
-                };
-
-                userDto.Roles.Add(roleDto);
-
-                foreach (var permission in role.SecurityRole.Permissions)
-                {
-                    var permissionDto = new Dto.Security.Permission
-                    {
-                        Id = permission.SecurityPermissionId,
-                        Name = permission.SecurityPermission.Name,
-                        Group = new Dto.Security.Group
-                        {
-                            Name = permission.SecurityPermission.Group.Name
-                        }
-                    };
-                    roleDto.Permissions.Add(permissionDto);
-                }
-            }
-
-            return new ObjectResult(userDto);
-        }
-
         [HttpPost]
         [Route("SaveCompany")]
         public IActionResult SaveCompany([FromBody] Company companyDto)
@@ -321,41 +276,5 @@ namespace Api.Controllers
                 return new BadRequestObjectResult(errors);
             }
         }
-
-        [HttpPost]
-        [Route("assignroles")]
-        public IActionResult AssignRoles([FromBody] AssignRolesDto dto)
-        {
-            try
-            {
-                var user = _securityService.GetAllUser().FirstOrDefault(u => u.Id == dto.UserId);
-                if (user == null)
-                    return NotFound("User not found");
-
-                // Remove existing roles
-                foreach (var role in user.Roles.ToList())
-                {
-                    _securityService.RemoveUserInRole(user.Id, role.SecurityRoleId);
-                }
-
-                // Add new roles
-                foreach (var roleId in dto.RoleIds)
-                {
-                    _securityService.AddUserInRole(user.Id, roleId);
-                }
-
-                return Ok("Roles assigned successfully");
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-    }
-
-    public class AssignRolesDto
-    {
-        public int UserId { get; set; }
-        public List<int> RoleIds { get; set; } = new List<int>();
     }
 }

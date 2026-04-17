@@ -101,7 +101,7 @@ using (var scope = app.Services.CreateScope())
     }
 
     var seeder = services.GetRequiredService<DatabaseSeeder>();
-    seeder.Seed();
+    _ = seeder.SeedAsync();
 }
 
 app.Run();

@@ -7,6 +7,8 @@ using Services.Inventory;
 using Services.Purchasing;
 using Services.Sales;
 using Services.Security;
+using Microsoft.AspNetCore.Identity;
+using Api.Data;
 
 namespace Api.Data.Seed
 {
@@ -19,35 +21,45 @@ namespace Api.Data.Seed
             _serviceProvider = serviceProvider;
         }
 
-        public void Seed()
+        public Task SeedAsync()
         {
-            using var scope = _serviceProvider.CreateScope();
-            var adminService = scope.ServiceProvider.GetRequiredService<IAdministrationService>();
-            var financialService = scope.ServiceProvider.GetRequiredService<IFinancialService>();
-            var salesService = scope.ServiceProvider.GetRequiredService<ISalesService>();
-            var purchasingService = scope.ServiceProvider.GetRequiredService<IPurchasingService>();
-            var inventoryService = scope.ServiceProvider.GetRequiredService<IInventoryService>();
-            var securityService = scope.ServiceProvider.GetRequiredService<ISecurityService>();
-
-            var initializer = new Initializer(
-                adminService, 
-                financialService, 
-                salesService, 
-                purchasingService, 
-                inventoryService, 
-                securityService
-            );
-
-            var success = initializer.Setup();
-
-            if (success)
+            return Task.Run(() =>
             {
-                Console.WriteLine("Database seeding completed successfully.");
-            }
-            else
-            {
-                Console.WriteLine("Database seeding failed. Check logs for details.");
-            }
+                try
+                {
+                    using var scope = _serviceProvider.CreateScope();
+                    var adminService = scope.ServiceProvider.GetRequiredService<IAdministrationService>();
+                    var financialService = scope.ServiceProvider.GetRequiredService<IFinancialService>();
+                    var salesService = scope.ServiceProvider.GetRequiredService<ISalesService>();
+                    var purchasingService = scope.ServiceProvider.GetRequiredService<IPurchasingService>();
+                    var inventoryService = scope.ServiceProvider.GetRequiredService<IInventoryService>();
+                    var securityService = scope.ServiceProvider.GetRequiredService<ISecurityService>();
+
+                    var initializer = new Initializer(
+                        adminService,
+                        financialService,
+                        salesService,
+                        purchasingService,
+                        inventoryService,
+                        securityService
+                    );
+
+                    var success = initializer.Setup();
+
+                    if (success)
+                    {
+                        Console.WriteLine("Database seeding completed successfully.");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Database seeding failed.");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Database seeding failed with exception: {ex.Message}");
+                }
+            });
         }
     }
 }
