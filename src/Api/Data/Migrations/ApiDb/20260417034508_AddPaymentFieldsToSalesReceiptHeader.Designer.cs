@@ -4,6 +4,7 @@ using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Data.Migrations.ApiDb
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260417034508_AddPaymentFieldsToSalesReceiptHeader")]
+    partial class AddPaymentFieldsToSalesReceiptHeader
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1013,6 +1016,9 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int>("MeasurementId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PurchaseInvoiceHeaderId")
                         .HasColumnType("int");
 
@@ -1025,14 +1031,13 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<decimal?>("ReceivedQuantity")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int?>("TaxGroupId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("InventoryControlJournalId");
 
                     b.HasIndex("ItemId");
+
+                    b.HasIndex("MeasurementId");
 
                     b.HasIndex("PurchaseInvoiceHeaderId");
 
@@ -1102,18 +1107,20 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int>("ItemId")
                         .HasColumnType("int");
 
+                    b.Property<int>("MeasurementId")
+                        .HasColumnType("int");
+
                     b.Property<int>("PurchaseOrderHeaderId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("Quantity")
                         .HasColumnType("decimal(18, 2)");
 
-                    b.Property<int?>("TaxGroupId")
-                        .HasColumnType("int");
-
                     b.HasKey("Id");
 
                     b.HasIndex("ItemId");
+
+                    b.HasIndex("MeasurementId");
 
                     b.HasIndex("PurchaseOrderHeaderId");
 
@@ -2531,6 +2538,12 @@ namespace Api.Data.Migrations.ApiDb
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Items.Measurement", "Measurement")
+                        .WithMany()
+                        .HasForeignKey("MeasurementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Purchases.PurchaseInvoiceHeader", "PurchaseInvoiceHeader")
                         .WithMany("PurchaseInvoiceLines")
                         .HasForeignKey("PurchaseInvoiceHeaderId")
@@ -2544,6 +2557,8 @@ namespace Api.Data.Migrations.ApiDb
                     b.Navigation("InventoryControlJournal");
 
                     b.Navigation("Item");
+
+                    b.Navigation("Measurement");
 
                     b.Navigation("PurchaseInvoiceHeader");
 
@@ -2571,6 +2586,12 @@ namespace Api.Data.Migrations.ApiDb
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
+                    b.HasOne("Core.Domain.Items.Measurement", "Measurement")
+                        .WithMany()
+                        .HasForeignKey("MeasurementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("Core.Domain.Purchases.PurchaseOrderHeader", "PurhcaseOrderHeader")
                         .WithMany("PurchaseOrderLines")
                         .HasForeignKey("PurchaseOrderHeaderId")
@@ -2578,6 +2599,8 @@ namespace Api.Data.Migrations.ApiDb
                         .IsRequired();
 
                     b.Navigation("Item");
+
+                    b.Navigation("Measurement");
 
                     b.Navigation("PurhcaseOrderHeader");
                 });
