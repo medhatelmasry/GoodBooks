@@ -4,6 +4,7 @@ using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,13 +12,15 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Data.Migrations.ApiDb
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260408013207_UpdateToTaxSystem_Purchasing")]
+    partial class UpdateToTaxSystem_Purchasing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.7")
+                .HasAnnotation("ProductVersion", "10.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -278,7 +281,6 @@ namespace Api.Data.Migrations.ApiDb
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<decimal>("Amount")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("DonationInvoiceHeaderId")
@@ -294,7 +296,6 @@ namespace Api.Data.Migrations.ApiDb
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("Quantity")
-                        .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
                     b.HasKey("Id");
@@ -970,6 +971,9 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int?>("PaymentTermId")
                         .HasColumnType("int");
 
+                    b.Property<string>("PurchaseOrderNumber")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("ReferenceNo")
                         .HasColumnType("nvarchar(max)");
 
@@ -1215,47 +1219,23 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int?>("AccountsPayableAccountId")
                         .HasColumnType("int");
 
-                    b.Property<string>("City")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Country")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("DiscountPercentage")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<string>("No")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PartyId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("PaymentMethod")
-                        .HasColumnType("int");
-
                     b.Property<int?>("PaymentTermId")
                         .HasColumnType("int");
 
-                    b.Property<string>("PostalCode")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int?>("PrimaryContactId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Province")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("PurchaseAccountId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PurchaseDiscountAccountId")
                         .HasColumnType("int");
-
-                    b.Property<string>("Street1")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Street2")
-                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("TaxGroupId")
                         .HasColumnType("int");
@@ -1327,8 +1307,23 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int?>("AccountsReceivableAccountId")
                         .HasColumnType("int");
 
+                    b.Property<string>("AddressLine1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("AddressLine2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("City")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Country")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("CustomerAdvancesAccountId")
                         .HasColumnType("int");
+
+                    b.Property<decimal?>("DiscountPercentage")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("No")
                         .HasColumnType("nvarchar(max)");
@@ -1339,17 +1334,41 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int?>("PaymentTermId")
                         .HasColumnType("int");
 
+                    b.Property<string>("PostalCode")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("PrimaryContactId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PromptPaymentDiscountAccountId")
                         .HasColumnType("int");
 
+                    b.Property<string>("Province")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<int?>("SalesAccountId")
                         .HasColumnType("int");
 
                     b.Property<int?>("SalesDiscountAccountId")
                         .HasColumnType("int");
+
+                    b.Property<string>("ShippingAddressLine1")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingAddressLine2")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingCity")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingCountry")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingPostalCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ShippingProvince")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("TaxGroupId")
                         .HasColumnType("int");
@@ -1743,16 +1762,7 @@ namespace Api.Data.Migrations.ApiDb
                     b.Property<int?>("GeneralLedgerHeaderId")
                         .HasColumnType("int");
 
-                    b.Property<string>("Memo")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<string>("No")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentMethod")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ReferenceNo")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("Status")
