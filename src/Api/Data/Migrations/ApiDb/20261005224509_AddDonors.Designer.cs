@@ -4,6 +4,7 @@ using Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Api.Data.Migrations.ApiDb
 {
     [DbContext(typeof(ApiDbContext))]
-    partial class ApiDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261005224509_AddDonors")]
+    partial class AddDonors
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -238,16 +241,10 @@ namespace Api.Data.Migrations.ApiDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<decimal>("Amount")
-                        .HasColumnType("decimal(18, 2)");
-
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
                     b.Property<int>("DonorId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("GlAccountId")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsTaxReceiptIssued")
@@ -255,10 +252,6 @@ namespace Api.Data.Migrations.ApiDb
 
                     b.Property<string>("No")
                         .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("PaymentType")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
 
                     b.Property<bool>("Posted")
                         .HasColumnType("bit");
@@ -275,8 +268,6 @@ namespace Api.Data.Migrations.ApiDb
                     b.HasKey("Id");
 
                     b.HasIndex("DonorId");
-
-                    b.HasIndex("GlAccountId");
 
                     b.ToTable("DonationInvoiceHeader");
                 });
@@ -2311,20 +2302,13 @@ namespace Api.Data.Migrations.ApiDb
 
             modelBuilder.Entity("Core.Domain.Donations.DonationInvoiceHeader", b =>
                 {
-                    b.HasOne("Core.Domain.Donations.Donor", "Donor")
+                    b.HasOne("Core.Domain.Sales.Customer", "Donor")
                         .WithMany()
                         .HasForeignKey("DonorId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Core.Domain.Financials.Account", "GlAccount")
-                        .WithMany()
-                        .HasForeignKey("GlAccountId")
-                        .OnDelete(DeleteBehavior.NoAction);
-
                     b.Navigation("Donor");
-
-                    b.Navigation("GlAccount");
                 });
 
             modelBuilder.Entity("Core.Domain.Donations.DonationInvoiceLine", b =>
